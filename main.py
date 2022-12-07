@@ -36,4 +36,4 @@ def afk_mouse_rel():
         if(y >= screen_height-2 or y <= 1):
             vy *= -1
             print("yout")
-afk_mouse_rel()
+afk_mouse_abs()
