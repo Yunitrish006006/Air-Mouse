@@ -12,7 +12,7 @@ def afk_mouse_abs():
     vx = 16
     vy = 16
     while keep:
-        if(keyboard.is_pressed('Esc')): keep = False
+        if(keyboard.is_pressed('esc+shift')): keep = False
         pyautogui.moveTo(x,y)
         x += vx
         y += vy
@@ -26,14 +26,10 @@ def afk_mouse_rel():
     vx = 16
     vy = 16
     while keep:
-        if(keyboard.is_pressed('Esc')): keep = False
+        if(keyboard.is_pressed('esc+shift')): keep = False
         pyautogui.moveRel(vx,vy)
         x = pyautogui.position()[0]
         y = pyautogui.position()[1]
-        if(x >= screen_width-2 or x <= 1): 
-            vx *= -1
-            print("xout")
-        if(y >= screen_height-2 or y <= 1):
-            vy *= -1
-            print("yout")
-afk_mouse_abs()
+        if(x >= screen_width-2 or x <= 1): vx *= -1
+        if(y >= screen_height-2 or y <= 1): vy *= -1
+afk_mouse_rel()
