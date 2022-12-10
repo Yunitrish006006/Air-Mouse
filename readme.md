@@ -28,4 +28,5 @@ S0xxxxxx 許家碩
     * 側鍵press
     * 側鍵release
 > 參考連結 \
-https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/
+https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/ \
+https://ithelp.ithome.com.tw/articles/10265041
