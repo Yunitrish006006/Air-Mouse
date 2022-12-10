@@ -32,4 +32,5 @@ def afk_mouse_rel():
         y = pyautogui.position()[1]
         if(x >= screen_width-2 or x <= 1): vx *= -1
         if(y >= screen_height-2 or y <= 1): vy *= -1
-afk_mouse_rel()
+if __name__=='__main__':
+    afk_mouse_rel()
