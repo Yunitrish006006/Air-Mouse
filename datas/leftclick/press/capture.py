@@ -9,19 +9,17 @@ if __name__=='__main__':
     i = 0
 
     while(True):
-    # 從攝影機擷取一張影像
-        ret, frame = cap.read()
-
-        # 顯示圖片
-        cv2.imshow('frame', frame)
-
         # 若按下 q 鍵則離開迴圈
         # 若按下 c 鍵則是拍照
-        if cv2.waitKey(1) & 0xFF == ord('q'): break
-        elif cv2.waitKey(1) & 0xFF == ord('c'): 
+        if cv2.waitKey(1) & 0xFF == ord('c'):     
+            ret, frame = cap.read()
             cv2.imwrite(path + "\\" + str(i) + '.jpg',frame)
             print('save:',path + "\\" + str(i) + '.jpg')
             i = i + 1
+        elif cv2.waitKey(1) & 0xFF == ord('q'): break
+        else:
+            ret, frame = cap.read()
+            cv2.imshow('frame', frame)
     # 釋放攝影機
     cap.release()
 
