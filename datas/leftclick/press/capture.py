@@ -5,7 +5,7 @@ path = os.path.dirname(os.path.realpath(__file__))
 print(path)
 if __name__=='__main__':
     # 選擇第二隻攝影機
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
     i = 0
 
     while(True):
