@@ -1,6 +1,6 @@
 import cv2
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 if not cap.isOpened():
     print("Cannot open camera")
     exit()
@@ -14,10 +14,17 @@ while(True):
         break
 
     # 彩色轉灰階
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    img_x = abs(cv2.Sobel(frame,cv2.CV_16S,1,0))
+    img_y = abs(cv2.Sobel(frame,cv2.CV_16S,0,1))
+    img_x = cv2.convertScaleAbs(img_x)
+    img_y = cv2.convertScaleAbs(img_y)
+    img_e = cv2.addWeighted(img_x,0.5,img_y,0.5,0.3)
+    #others
+
 
     # 顯示圖片
-    cv2.imshow('live', frame)
+    cv2.imshow('live', img_e)
     #cv2.imshow('live', gray)
 
     # 按下 q 鍵離開迴圈
