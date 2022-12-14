@@ -19,14 +19,14 @@ S0xxxxxx 許家碩
 3. 將目前偵測到的手部做骨架應用
 4. 分別將骨架的各模式偵測出來 \
 並根據各個功能去做操作
-    * 左右移動 (對應滑鼠X軸) S0954022
-    * 前後移動 (對應滑鼠Y軸)
-    * 左鍵press
-    * 左鍵release
-    * 右鍵press
-    * 右鍵release
-    * 側鍵press
-    * 側鍵release
+    * 左右移動 (對應滑鼠X軸)(許家碩)
+    * 前後移動 (對應滑鼠Y軸)(林煜宸)
+    * 左鍵press(林昀佑)
+    * 左鍵release(林昀佑)
+    * 右鍵press(吳季旻)
+    * 右鍵release(吳季旻)
+    * 側鍵press(龔品宇)
+    * 側鍵release(龔品宇)
 
 > 參考連結 \
 <https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/> \
