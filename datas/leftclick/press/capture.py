@@ -10,6 +10,7 @@ if __name__=='__main__':
 
     while(True):
         # 若按下 q 鍵則離開迴圈
+        #
         # 若按下 c 鍵則是拍照
         if cv2.waitKey(1) & 0xFF == ord('c'):     
             ret, frame = cap.read()
