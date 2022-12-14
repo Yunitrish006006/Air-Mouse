@@ -51,7 +51,7 @@ if __name__ == '__main__':
         #         l = linesP[i][0]
         #         cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
         #mixer
-        img_e = (255-img_e)
+        # img_e = (255-img_e)
         img_all = cv2.addWeighted(img_e,1,frame,0,0)
         # img_all = cv2.cvtColor(img_all,cv2.COLOR_RGB2GRAY)
         # 顯示圖片
