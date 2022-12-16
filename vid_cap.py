@@ -29,33 +29,34 @@ if __name__ == '__main__':
         image_c = cv2.Canny(img_gray, 50, 200, 3)
         image_canny = cv2.convertScaleAbs(image_c)
         #houghLines
-        # dst = cv2.Canny(frame, 50, 200, None, 3)
-        # cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-        # cdstP = np.copy(cdst)
-        # lines = cv2.HoughLines(dst, 1, np.pi / 180, 150, None, 0, 0)
-        # if lines is not None:
-        #     for i in range(0, len(lines)):
-        #         rho = lines[i][0][0]
-        #         theta = lines[i][0][1]
-        #         a = math.cos(theta)
-        #         b = math.sin(theta)
-        #         x0 = a * rho
-        #         y0 = b * rho
-        #         pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
-        #         pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
-        #         cv2.line(cdst, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
-        # linesP = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
+        dst = cv2.Canny(frame, 50, 200, None, 3)
+        cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+        cdstP = np.copy(cdst)
+        lines = cv2.HoughLines(dst, 1, np.pi / 180, 150, None, 0, 0)
+        if lines is not None:
+            for i in range(0, len(lines)):
+                rho = lines[i][0][0]
+                theta = lines[i][0][1]
+                a = math.cos(theta)
+                b = math.sin(theta)
+                x0 = a * rho
+                y0 = b * rho
+                pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
+                pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+                cv2.line(cdst, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+        linesP = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
         
-        # if linesP is not None:
-        #     for i in range(0, len(linesP)):
-        #         l = linesP[i][0]
-        #         cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
+        if linesP is not None:
+            for i in range(0, len(linesP)):
+                l = linesP[i][0]
+                cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
         #mixer
         # img_e = (255-img_e)
-        img_all = cv2.addWeighted(img_e,1,frame,0,0)
+        img_all = cv2.addWeighted(img_e,0.6,frame,0.4,0)
+        img_all = cv2.addWeighted(cdstP,0.6,frame,0.3,0)
         # img_all = cv2.cvtColor(img_all,cv2.COLOR_RGB2GRAY)
         # 顯示圖片
-        cv2.imshow('live', img_all)
+        cv2.imshow('live', img_e)
 
         # 按下 q 鍵離開迴圈
         if cv2.waitKey(1) == ord('q'):

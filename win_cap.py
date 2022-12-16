@@ -15,11 +15,13 @@ if __name__ == '__main__':
         # img_rgb = ImageGrab.grab()
         img_rgb = ImageGrab.grab()
         mtitle = ""
-        for x in pyautogui.getAllWindows(): 
-            if(x.title!="" and (x.title)[0:9] == "Minecraft"):mtitle = x.title
+        for x in pyautogui.getAllWindows():
+            #[0:4] 
+            if(x.title!="" and (x.title)[0:8] == "Minecraft"):mtitle = x.title
         x1,y1,x2,y2 = GetWindowRect(FindWindow(None,mtitle))
 
-        img_rgb = ImageGrab.grab(bbox=(x1+10,y1+30,x2-10,y2-5))
+        # img_rgb = ImageGrab.grab(bbox=(x1+10,y1+30,x2-10,y2-5))
+        img_rgb = ImageGrab.grab(GetWindowRect(FindWindow(None,mtitle)))
         img_bgr = cv2.cvtColor(np.array(img_rgb), cv2.COLOR_RGB2BGR)
         img_gray = cv2.cvtColor(np.array(img_rgb),cv2.COLOR_RGB2GRAY)
         
@@ -31,7 +33,7 @@ if __name__ == '__main__':
         
         img_e = cv2.addWeighted(img_x,1,img_y,1,0)
 
-        img_e = cv2.addWeighted(img_e,0.2,np.copy(img_rgb),1,0)
+        # img_e = cv2.addWeighted(img_e,0.2,np.copy(img_rgb),1,0)
 
         video.write(img_bgr)
         cv2.imshow('live', img_e)
