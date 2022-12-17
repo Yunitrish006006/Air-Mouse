@@ -8,7 +8,7 @@
 S0954005 林昀佑 \
 S0954022 林煜宸 \
 S0954040 吳季旻 \
-S0xxxxxx 許家碩
+S0963032 許家碩
 
 ## 流程
 
@@ -32,7 +32,7 @@ S0xxxxxx 許家碩
 
 > 參考連結 \
 
-<https://teachablemachine.withgoogle.com/train>
+<https://teachablemachine.withgoogle.com/train> \
 <https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/> \
-<https://ithelp.ithome.com.tw/articles/10265041>
+<https://ithelp.ithome.com.tw/articles/10265041> \
 <https://medium.com/%E9%9B%9E%E9%9B%9E%E8%88%87%E5%85%94%E5%85%94%E7%9A%84%E5%B7%A5%E7%A8%8B%E4%B8%96%E7%95%8C/%E6%A9%9F%E5%99%A8%E5%AD%B8%E7%BF%92-ml-note-yolo-%E5%88%A9%E7%94%A8%E5%BD%B1%E5%83%8F%E8%BE%A8%E8%AD%98%E5%81%9A%E7%89%A9%E4%BB%B6%E5%81%B5%E6%B8%AC-object-detection-%E7%9A%84%E6%8A%80%E8%A1%93-3ad34a4cac70>
