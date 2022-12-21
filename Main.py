@@ -6,43 +6,39 @@ import math
 import keyboard
 import pydirectinput
 import pyautogui
-
+import random
+import mediapipe as mp
 len_mode = 0
+len_counts = 12
+depth = 500
+mp_drawing = mp.solutions.drawing_utils
+mp_hands = mp.solutions.hands
+names = ["wrist"
+        ,"thumb_cmc","thumb_mcp","thumb_ip","thumb_tip"
+        ,"index_mcp","index_pip","index_dip","index_tip"
+        ,"middle_mcp","middle_pip","middle_dip","middle_tip"
+        ,"ring_mcp","ring_pip","ring_dip","ring_tip"
+        ,"pinky_mcp","pinky_pip","pinky_dip","pinky_tip"
+        ]
+#===========================================================
 def changemode_button():
     global len_mode
-    len_mode = (len_mode+1)%7
     len_switcher.set(len_mode)
 def changemode_trackbar(value):
     global len_mode
     len_mode = int(value)
-
-def lens(frame,option):
-    mapping = {
-        0:frame,
-        1:np.empty((360,640,3),np.uint8),
-        2:np.zeros((360,640,3),np.uint8),
-        3:np.ones((360,640,3),np.uint8)*255,
-        4:abs(255-frame),
-        5:l2(frame,1),
-        6:l2(frame,3),
-        7:cv2.Canny(frame, 50, 200, 3),
-    }
-    if option not in range(0,7): return mapping.get(1)
-    return mapping.get(option)
-
-def l2(frame,img_mode):
-    # 彩色轉灰階
-    img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #edge founder
-    img_x = abs(cv2.Sobel(frame,cv2.CV_16S,1,0))
-    img_y = abs(cv2.Sobel(frame,cv2.CV_16S,0,1))
-    img_x = cv2.convertScaleAbs(img_x)
-    img_y = cv2.convertScaleAbs(img_y)
-    img_e = cv2.addWeighted(img_x,0.5,img_y,0.5,0.3)
-    # #canny
-    image_c = cv2.Canny(img_gray, 50, 200, 3)
-    image_canny = cv2.convertScaleAbs(image_c)
-    # #houghLines
+#lens functions
+def sobel_img(frame):
+    x = abs(cv2.Sobel(frame,cv2.CV_16S,1,0))
+    y = abs(cv2.Sobel(frame,cv2.CV_16S,0,1))
+    x = cv2.convertScaleAbs(x)
+    y = cv2.convertScaleAbs(y)
+    return cv2.addWeighted(x,0.5,y,0.5,0.3)
+def gray_scale(frame):
+    return cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY),cv2.COLOR_GRAY2RGB)
+def canny(frame):
+    return cv2.Canny(gray_scale(frame),50,200,3)
+def line_img(frame):
     dst = cv2.Canny(frame, 50, 200, None, 3)
     cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
     cdstP = np.copy(cdst)
@@ -63,24 +59,72 @@ def l2(frame,img_mode):
     if linesP is not None:
         for i in range(0, len(linesP)):
             l = linesP[i][0]
-            cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
-    img_all = cv2.addWeighted(img_e,0.6,frame,0.4,0)
-    img_all = cv2.addWeighted(cdstP,0.6,frame,0.3,0)
-    img_all = cv2.cvtColor(img_all,cv2.COLOR_RGB2GRAY)
-    # 顯示圖片
-    if(img_mode == 0): img_e = frame
-    elif(img_mode == 1): img_e = img_e
-    elif(img_mode == 2): img_e = abs(img_e + 255)
-    elif(img_mode == 3): img_e = cv2.addWeighted(abs(img_e + 30),0.7,frame,1,0)
-    elif(img_mode == 4): img_e = (255-img_e)
-    elif(img_mode == 5): img_e = img_all
-    else: img_e = frame
-    return img_e
-
+            cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,255,0), 1, cv2.LINE_AA)
+    return cdstP
+#===========================================================
+def lens(frame,option):
+    mapping = {
+        0:frame,
+        1:np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),
+        2:np.zeros((360,640,3),dtype=np.uint8),
+        3:np.ones((360,640,3),dtype=np.uint8)*255,
+        4:abs(255-frame),
+        5:sobel_img(frame),
+        6:line_img(frame),
+        7:canny(frame),
+        8:abs(sobel_img(frame) + 255),
+        9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
+        10:cv2.Laplacian(gray_scale(frame),cv2.CV_16S,3,1,0),
+        # 11:gray_scale(frame)
+        # 11:cv2.addWeighted(sobel_img(frame),0.7,abs(255-sobel_img(frame)),1,0),
+    }
+    if option not in range(0,len(mapping)): return mapping.get(1)
+    else: return mapping.get(option)
+#==========================================================================
+def stablizer(landmark,finger_points):
+    global pre_landmark
+    pre_landmark = landmark
+    if keyboard.is_pressed('p'):
+        for i in range(0,len(finger_points)):
+            print(names[i],finger_points[i][0],finger_points[i][1],finger_points[i][2])
+        print("")
+#==========================================================================
+def debug_sketch(landmark,width,height):
+    finger_points = []
+    fx = []
+    fy = []
+    fz = []
+    if landmark.multi_hand_landmarks:
+        for hand_landmarks in landmark.multi_hand_landmarks:
+            for i in hand_landmarks.landmark:
+                x = i.x*width                       # 計算 x 座標
+                y = i.y*height                      # 計算 y 座標
+                z = i.z*depth                      # 計算 z 座標
+                finger_points.append((int(x),int(y),-1*int(z)))
+                fx.append(int(x))                   # 記錄 x 座標
+                fy.append(int(y))                   # 記錄 y 座標
+                fz.append(int(-1*z))                   # 記錄 z 座標
+        if keyboard.is_pressed('c'):
+            temp = ""
+            for i,j in zip(range(0,21),names):
+                if((i-1)%4 == 0): temp+="\n"
+                temp+=j+"("+str(fx[i])+","+str(fy[i])+","+str(fz[i])+")\t"
+            print(temp)
+    return finger_points
+#==========================================================================
+def hand_skeleton(frame,width,height):
+    results = hands.process(frame)
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+    stablizer(results,debug_sketch(results,width,height))
+    return frame
+#================================================================
 def camera_cap():
     ret,frame = camera.read()
     if ret:
         frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+        hand_skeleton(frame,camera.get(3),camera.get(4))
         temp = lens(frame,len_mode)
         temp = Image.fromarray(temp)
         temp = ImageTk.PhotoImage(image=temp)
@@ -103,28 +147,37 @@ def call_out():
     pyautogui.keyUp('delete')
 
 if __name__ == '__main__':
-    camera = cv2.VideoCapture(1,cv2.CAP_DSHOW)
+    camera = cv2.VideoCapture(0,cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH,640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
     root = Tk()
-    root.title("ui")
-    # root.geometry("640x480")
+    root.title("手部滑鼠 - 期末專題")
+    root.geometry("640x640")
     panel = Label(root)
     panel.pack(padx=10,pady=10)
     root.config(cursor="arrow")
+    #==================================================================================================================
+    len_button = Button(text="隨機濾鏡",command=lambda:len_switcher.set(random.randint(0,len_counts)),font=('Arial',20,'bold'))
+    len_button.place(x=30,y=400,width=200,height=60)
+    mouse_button = Button(text="mouse",command=pyautogui.rightClick(),font=('Arial',20,'bold'))
+    mouse_button.place(x=260,y=400,width=100,height=60)
+    len_switcher = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,command=changemode_trackbar)
+    len_switcher.place(x=420,y=400,width=200,height=60)
+    #==================================================================================================================
+    cam1 = Button(text="cam1",command=pyautogui.rightClick(),font=('Arial',20,'bold'))
+    cam1.place(x=30,y=520,width=200,height=60)
     #
-    len_button = Button(text="更換濾鏡",command=changemode_button,font=('Arial',30,'bold'))
-    len_button.pack(anchor="sw",fill="none")
-    #
-    len_button = Button(text="mouse",command=call_out,font=('Arial',30,'bold'))
-    len_button.pack(anchor="n",fill="none")
-    #
-    len_switcher = Scale(root, from_=0, to=10,orient=HORIZONTAL,command=changemode_trackbar)
-    len_switcher.pack()
-    #
-    camera_cap()
-
-    root.mainloop()
+    cam2 = Button(text="cam2",command=pyautogui.rightClick(),font=('Arial',20,'bold'))
+    cam2.place(x=260,y=520,width=200,height=60)
+    #==================================================================================================================
+    with mp_hands.Hands(
+        static_image_mode=True,
+        min_detection_confidence=0.3,
+        max_num_hands=1,
+        min_tracking_confidence=0.3,
+        model_complexity=0) as hands:
+            camera_cap()
+            root.mainloop()
 
     camera.release()
     cv2.destroyAllWindows()
