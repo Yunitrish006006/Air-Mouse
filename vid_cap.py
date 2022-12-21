@@ -1,8 +1,14 @@
+from tkinter import *
+from PIL import Image,ImageTk
 import cv2
 import numpy as np
 import math
+
+def ignore(x):
+    pass
+
 if __name__ == '__main__':
-    cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(1,cv2.CAP_DSHOW)
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
@@ -10,6 +16,21 @@ if __name__ == '__main__':
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
 
     cv2.namedWindow("live", cv2.WINDOW_AUTOSIZE); # 命名一個視窗，可不寫
+    
+    cv2.createTrackbar('mode','live',0,7,ignore)
+    # cv2.createTrackbar('R','live',0,255,ignore)
+    # cv2.createTrackbar('G','live',0,255,ignore)
+    # cv2.createTrackbar('B','live',0,255,ignore)
+
+    root = Tk()
+    root.title("opencv + tkinter")
+
+    panel = Label(root)
+    panel.pack(padx=10,pady=10)
+    root.config(cursor="arrow")
+    btn = Button(root,text="[__]")
+    btn.pack(fill="both",expand=True,padx=10,pady=10)
+
     while(True):
         # 擷取影像
         ret, frame = cap.read()
@@ -50,13 +71,22 @@ if __name__ == '__main__':
             for i in range(0, len(linesP)):
                 l = linesP[i][0]
                 cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
-        #mixer
-        # img_e = (255-img_e)
         img_all = cv2.addWeighted(img_e,0.6,frame,0.4,0)
         img_all = cv2.addWeighted(cdstP,0.6,frame,0.3,0)
         # img_all = cv2.cvtColor(img_all,cv2.COLOR_RGB2GRAY)
         # 顯示圖片
+        
+        img_mode = cv2.getTrackbarPos('mode','live')
+        if(img_mode == 0): img_e = frame
+        elif(img_mode == 1): img_e = img_e
+        elif(img_mode == 2): img_e = abs(img_e + 255)
+        elif(img_mode == 3): img_e = cv2.addWeighted(abs(img_e + 30),0.7,frame,1,0)
+        elif(img_mode == 4): img_e = (255-img_e)
+        elif(img_mode == 5): img_e = img_all
+        else: img_e = frame
+
         cv2.imshow('live', img_e)
+        root.mainloop()
 
         # 按下 q 鍵離開迴圈
         if cv2.waitKey(1) == ord('q'):
