@@ -1,4 +1,3 @@
-sensitive = 4 # 靈敏度
 finger_center_temp = 0
 def Left_Right_Move():
     global finger_center_temp
@@ -22,6 +21,7 @@ def Left_Right_Move():
     finger_center_temp = finger_center
 
 def moveMouse(var, direct, x, y):
+    sensitive = 4 # 靈敏度
     if(var > 3):
         x += var * sensitive * direct
         win32api.SetCursorPos((round(x),round(y)))
