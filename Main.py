@@ -10,7 +10,7 @@ import random
 import mediapipe as mp
 len_mode = 0
 len_counts = 12
-depth = 500
+depth = 200
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 names = ["wrist"
@@ -20,6 +20,14 @@ names = ["wrist"
         ,"ring_mcp","ring_pip","ring_dip","ring_tip"
         ,"pinky_mcp","pinky_pip","pinky_dip","pinky_tip"
         ]
+
+index_finger_pos = [0,0,0,0]
+index_finger_press = False
+
+middle_finger_pos = [0,0,0,0]
+middle_finger_press = False
+
+pyautogui.FAILSAFE = False
 #===========================================================
 def changemode_button():
     global len_mode
@@ -27,7 +35,7 @@ def changemode_button():
 def changemode_trackbar(value):
     global len_mode
     len_mode = int(value)
-#lens functions
+#===========================================================lens functions
 def sobel_img(frame):
     x = abs(cv2.Sobel(frame,cv2.CV_16S,1,0))
     y = abs(cv2.Sobel(frame,cv2.CV_16S,0,1))
@@ -37,7 +45,9 @@ def sobel_img(frame):
 def gray_scale(frame):
     return cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY),cv2.COLOR_GRAY2RGB)
 def canny(frame):
-    return cv2.Canny(gray_scale(frame),50,200,3)
+    temp = cv2.cvtColor(frame,cv2.COLOR_RGB2GRAY)
+    temp = cv2.GaussianBlur(temp,(7,7),0)
+    return cv2.Canny(temp,35,60,3)
 def line_img(frame):
     dst = cv2.Canny(frame, 50, 200, None, 3)
     cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
@@ -63,25 +73,33 @@ def line_img(frame):
     return cdstP
 #===========================================================
 def lens(frame,option):
-    mapping = {
-        0:frame,
-        1:np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),
-        2:np.zeros((360,640,3),dtype=np.uint8),
-        3:np.ones((360,640,3),dtype=np.uint8)*255,
-        4:abs(255-frame),
-        5:sobel_img(frame),
-        6:line_img(frame),
-        7:canny(frame),
-        8:abs(sobel_img(frame) + 255),
-        9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
-        10:cv2.Laplacian(gray_scale(frame),cv2.CV_16S,3,1,0),
-        # 11:gray_scale(frame)
-        # 11:cv2.addWeighted(sobel_img(frame),0.7,abs(255-sobel_img(frame)),1,0),
-    }
-    if option not in range(0,len(mapping)): return mapping.get(1)
-    else: return mapping.get(option)
+    # mapping = {
+    #     0:frame,
+    #     1:np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),
+    #     2:np.zeros((360,640,3),dtype=np.uint8),
+    #     3:np.ones((360,640,3),dtype=np.uint8)*255,
+    #     4:abs(255-frame),
+    #     5:sobel_img(frame),
+    #     6:line_img(frame),
+    #     7:abs(255-canny(frame)),
+    #     8:abs(sobel_img(frame) + 255),
+    #     9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
+    #     10:(gray_scale(frame)%2)*125,
+    #     # 10:cv2.Laplacian(gray_scale(frame),cv2.CV_16S,3,1,0),
+    #     # 11:gray_scale(frame)
+    #     11:cv2.addWeighted(np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),0.2,abs(200-sobel_img(frame)),1,0),
+    # }
+    # if option not in range(0,len(mapping)):
+    #     return mapping.get(1)
+    # else:
+    #     return mapping.get(option)
+    return frame
 #==========================================================================
 def stablizer(landmark,finger_points):
+    global pre_landmark
+    pre_landmark = landmark
+#==========================================================================
+def debugger(landmark,finger_points):
     global pre_landmark
     pre_landmark = landmark
     if keyboard.is_pressed('p'):
@@ -112,11 +130,47 @@ def debug_sketch(landmark,width,height):
             print(temp)
     return finger_points
 #==========================================================================
+def put_num(frame,num,x,y):
+    cv2.putText(img=frame,text=str(num),org=(x,y),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
+def draw_index_finger(data,frame):
+    global index_finger_press
+    global middle_finger_press
+    cnt = 0
+    print(data)
+    for i in data.landmark:
+        if(8<=cnt and cnt<=8):
+            delta = index_finger_pos[cnt-5]-round(i.y*depth)
+            if (abs(delta)>12):
+                if(delta < 0 and index_finger_press == False):#press
+                    cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(255,255,255),2)
+                    index_finger_press = True
+                elif(delta > 0 and index_finger_press):#release
+                    cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(0,0,255),2)
+                    index_finger_press = False
+                index_finger_pos[cnt-5] = round(i.y*depth)
+            put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
+            cv2.putText(img=frame,text="left pressed: "+str(index_finger_press),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
+        elif(12<=cnt and cnt<=12):
+            delta = middle_finger_pos[cnt-9]-round(i.y*depth)
+            if (abs(delta)>12):
+                if(delta < 0 and middle_finger_press == False):#press
+                    cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(255,255,255),2)
+                    middle_finger_press = True
+                elif(delta > 0 and middle_finger_press):#release
+                    cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(0,0,255),2)
+                    middle_finger_press = False
+                middle_finger_pos[cnt-9] = round(i.y*depth)
+            put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
+            cv2.putText(img=frame,text="left pressed: "+str(index_finger_press),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
+            cv2.putText(img=frame,text="right pressed: "+str(middle_finger_press),org=(30,40),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
+        cnt+=1   
+#==========================================================================
 def hand_skeleton(frame,width,height):
     results = hands.process(frame)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            draw_index_finger(hand_landmarks,frame)
     stablizer(results,debug_sketch(results,width,height))
     return frame
 #================================================================
@@ -131,47 +185,50 @@ def camera_cap():
         panel.imgtk = temp
         panel.config(image=temp)
         root.after(1,camera_cap)
-
-def call_out():
-    # pydirectinput.moveRel(700, -30, duration=3)
-    # pyautogui.rightClick()
-    # pyautogui.leftClick()
-    # pydirectinput.keyDown('ctrl')
-    # pydirectinput.keyDown('alt')
-    # pydirectinput.keyDown('delete')
-    pyautogui.keyDown('ctrl')
-    pyautogui.keyDown('alt')
-    pyautogui.keyDown('delete')
-    pyautogui.keyUp('ctrl')
-    pyautogui.keyUp('alt')
-    pyautogui.keyUp('delete')
+    
+def get_cam_list():
+    usb_port = 0
+    while True:
+        camera = cv2.VideoCapture(usb_port)
+        if not camera.isOpened():
+            break
+        else:
+            is_reading, img = camera.read()
+            cv2.imshow(str(usb_port),img)
+            w = camera.get(3)
+            h = camera.get(4)
+            if is_reading:
+                print("Port %s is working and reads images (%s x %s)" %(usb_port,h,w))
+        usb_port +=1
+        camera.release()
+    return usb_port
 
 if __name__ == '__main__':
-    camera = cv2.VideoCapture(0,cv2.CAP_DSHOW)
-    camera.set(cv2.CAP_PROP_FRAME_WIDTH,640)
-    camera.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
+    #==================================================================================================================ui sets
     root = Tk()
     root.title("手部滑鼠 - 期末專題")
     root.geometry("640x640")
     panel = Label(root)
     panel.pack(padx=10,pady=10)
     root.config(cursor="arrow")
-    #==================================================================================================================
+    #==================================================================================================================camera sets
+    camera = cv2.VideoCapture(0,cv2.CAP_DSHOW)
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH,640)
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
+    camera.set(cv2.CAP_PROP_FPS,60)
+    #==================================================================================================================line1
     len_button = Button(text="隨機濾鏡",command=lambda:len_switcher.set(random.randint(0,len_counts)),font=('Arial',20,'bold'))
     len_button.place(x=30,y=400,width=200,height=60)
     mouse_button = Button(text="mouse",command=pyautogui.rightClick(),font=('Arial',20,'bold'))
     mouse_button.place(x=260,y=400,width=100,height=60)
     len_switcher = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,command=changemode_trackbar)
     len_switcher.place(x=420,y=400,width=200,height=60)
-    #==================================================================================================================
-    cam1 = Button(text="cam1",command=pyautogui.rightClick(),font=('Arial',20,'bold'))
+    #==================================================================================================================line2
+    cam1 = Button(text="cam1",command=lambda:print("test"),font=('Arial',20,'bold'))
     cam1.place(x=30,y=520,width=200,height=60)
-    #
-    cam2 = Button(text="cam2",command=pyautogui.rightClick(),font=('Arial',20,'bold'))
-    cam2.place(x=260,y=520,width=200,height=60)
     #==================================================================================================================
     with mp_hands.Hands(
-        static_image_mode=True,
+        # static_image_mode=True,
         min_detection_confidence=0.3,
         max_num_hands=1,
         min_tracking_confidence=0.3,
