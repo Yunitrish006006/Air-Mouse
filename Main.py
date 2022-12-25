@@ -8,11 +8,15 @@ import pydirectinput
 import pyautogui
 import random
 import mediapipe as mp
+import win32api
+import statistics
 len_mode = 0
 len_counts = 12
 depth = 200
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
+w = 640
+h = 360
 names = ["wrist"
         ,"thumb_cmc","thumb_mcp","thumb_ip","thumb_tip"
         ,"index_mcp","index_pip","index_dip","index_tip"
@@ -20,6 +24,12 @@ names = ["wrist"
         ,"ring_mcp","ring_pip","ring_dip","ring_tip"
         ,"pinky_mcp","pinky_pip","pinky_dip","pinky_tip"
         ]
+
+varitation = [0,0]
+direction = [0,0]
+
+finger_center = [0,0]
+finger_center_temp = [0,0]
 
 index_finger_pos = [0,0,0,0]
 index_finger_press = False
@@ -166,7 +176,7 @@ def draw_index_finger(data,frame):
             put_Boolean(frame,"left pressed",index_finger_press,1)
             put_Boolean(frame,"right pressed",middle_finger_press,2)
         cnt+=1   
-#==========================================================================
+#========================================================================== 龔品宇
 def draw_thumb(data,frame):
     global thumb_press
     thumb1_x=0
@@ -181,7 +191,43 @@ def draw_thumb(data,frame):
     else:
         thumb_press = False
     cv2.putText(img=frame,text="thumb pressed: "+str(thumb_press),org=(30,50),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,255,0),thickness=2,lineType=cv2.LINE_AA)
-#==========================================================================
+#==========================================================================林煜宸
+def moveMouse(var, direct, x, y):
+    sensitive = 4 # 靈敏度
+    if(var[0] > 3 or var[1] > 3):
+        x += var[0] * sensitive * direct[0]
+        y += var[1] * sensitive * direct[1] * 2
+        win32api.SetCursorPos((round(x),round(y)))
+def move(hand_landmarks):
+    finger_tips = [5]
+    finger_tips.insert(0,hand_landmarks.landmark[4].x * w) #大拇指
+    finger_tips.insert(1,hand_landmarks.landmark[8].x * w)
+    finger_tips.insert(2,hand_landmarks.landmark[12].x * w)
+    finger_tips.insert(3,hand_landmarks.landmark[16].x * w)
+    finger_tips.insert(4,hand_landmarks.landmark[20].x * w) #小指
+    finger_center[0] = statistics.mean(finger_tips);  #計算平均數
+
+    finger_y = [4]
+    finger_y.insert(0,hand_landmarks.landmark[0].y * h)
+    finger_y.insert(1,hand_landmarks.landmark[1].y * h)
+    finger_y.insert(2,hand_landmarks.landmark[13].y * h)
+    finger_y.insert(3,hand_landmarks.landmark[17].y * h)
+    # finger_tips_pos.insert(4,hand_landmarks.landmark[17].y * h); #小指
+    finger_center[1] = statistics.mean(finger_y);  #計算平均數
+    if finger_center_temp[0] == 0:
+        finger_center_temp[0] = finger_center[0]
+        finger_center_temp[1] = finger_center[1]
+    
+    varitation[0], varitation[1] = abs(finger_center[0] - finger_center_temp[0]), abs(finger_center[1] - finger_center_temp[1])
+    direction[0], direction[1] = np.sign(finger_center[0] - finger_center_temp[0])*(-1), np.sign(finger_center[1] - finger_center_temp[1])*(-1)
+    
+    x = pyautogui.position()[0]
+    y = pyautogui.position()[1]
+    
+    moveMouse(varitation,direction,x,y)
+    finger_center_temp[0] = finger_center[0]
+    finger_center_temp[1] = finger_center[1]
+#==========================================================================林昀佑
 def hand_skeleton(frame,width,height):
     results = hands.process(frame)
     if results.multi_hand_landmarks:
