@@ -178,10 +178,9 @@ def camera_cap():
     if ret:
         frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
         hand_skeleton(frame,camera.get(3),camera.get(4))
-        temp = lens(frame,len_mode)
-        temp = Image.fromarray(temp)
-        temp = ImageTk.PhotoImage(image=temp)
-        panel.imgtk = temp
+        # temp = lens(frame,len_mode)
+        temp = frame
+        panel.imgtk = ImageTk.PhotoImage(image=Image.fromarray(temp))
         panel.config(image=temp)
         root.after(1,camera_cap)
     
