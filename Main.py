@@ -136,7 +136,7 @@ def draw_index_finger(data,frame):
     global index_finger_press
     global middle_finger_press
     cnt = 0
-    print(data)
+    # print(data)
     for i in data.landmark:
         if(cnt == 8):
             delta = index_finger_pos[cnt-5]-round(i.y*depth)
@@ -171,7 +171,6 @@ def hand_skeleton(frame,width,height):
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             draw_index_finger(hand_landmarks,frame)
-    stablizer(results,debug_sketch(results,width,height))
     return frame
 #================================================================
 def camera_cap():
