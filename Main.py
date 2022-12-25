@@ -131,7 +131,7 @@ def debug_sketch(landmark,width,height):
 def put_num(frame,num,x,y):
     cv2.putText(img=frame,text=str(num),org=(x,y),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
 def put_Boolean(frame,key,value,line):
-    cv2.putText(img=frame,text=key+": "+str(value),org=(30,30*line),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
+    cv2.putText(img=frame,text=key+": "+str(value),org=(30,30*int(line)),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
 def draw_index_finger(data,frame):
     global index_finger_press
     global middle_finger_press
