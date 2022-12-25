@@ -73,27 +73,27 @@ def line_img(frame):
     return cdstP
 #===========================================================
 def lens(frame,option):
-    # mapping = {
-    #     0:frame,
-    #     1:np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),
-    #     2:np.zeros((360,640,3),dtype=np.uint8),
-    #     3:np.ones((360,640,3),dtype=np.uint8)*255,
-    #     4:abs(255-frame),
-    #     5:sobel_img(frame),
-    #     6:line_img(frame),
-    #     7:abs(255-canny(frame)),
-    #     8:abs(sobel_img(frame) + 255),
-    #     9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
-    #     10:(gray_scale(frame)%2)*125,
-    #     # 10:cv2.Laplacian(gray_scale(frame),cv2.CV_16S,3,1,0),
-    #     # 11:gray_scale(frame)
-    #     11:cv2.addWeighted(np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),0.2,abs(200-sobel_img(frame)),1,0),
-    # }
-    # if option not in range(0,len(mapping)):
-    #     return mapping.get(1)
-    # else:
-    #     return mapping.get(option)
-    return frame
+    mapping = {
+        0:frame,
+        1:np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),
+        2:np.zeros((360,640,3),dtype=np.uint8),
+        3:np.ones((360,640,3),dtype=np.uint8)*255,
+        4:abs(255-frame),
+        5:sobel_img(frame),
+        6:line_img(frame),
+        7:abs(255-canny(frame)),
+        8:abs(sobel_img(frame) + 255),
+        9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
+        10:(gray_scale(frame)%2)*125,
+        # 10:cv2.Laplacian(gray_scale(frame),cv2.CV_16S,3,1,0),
+        # 11:gray_scale(frame)
+        11:cv2.addWeighted(np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),0.2,abs(200-sobel_img(frame)),1,0),
+    }
+    if option not in range(0,len(mapping)):
+        return mapping.get(1)
+    else:
+        return mapping.get(option)
+    # return frame
 #==========================================================================
 def stablizer(landmark,finger_points):
     global pre_landmark
@@ -161,8 +161,8 @@ def draw_index_finger(data,frame):
                     middle_finger_press = False
                 middle_finger_pos[cnt-9] = round(i.y*depth)
             put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
-            cv2.putText(img=frame,text="left pressed: "+str(index_finger_press),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
-            cv2.putText(img=frame,text="right pressed: "+str(middle_finger_press),org=(30,40),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
+            cv2.putText(img=frame,text="left pressed: "+str(index_finger_press),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
+            cv2.putText(img=frame,text="right pressed: "+str(middle_finger_press),org=(30,40),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
         cnt+=1   
 #==========================================================================
 def hand_skeleton(frame,width,height):
