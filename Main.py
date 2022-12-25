@@ -132,13 +132,15 @@ def debug_sketch(landmark,width,height):
 #==========================================================================
 def put_num(frame,num,x,y):
     cv2.putText(img=frame,text=str(num),org=(x,y),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
+def put_Boolean(frame,key,value):
+    cv2.putText(img=frame,text=key+": "+str(value),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
 def draw_index_finger(data,frame):
     global index_finger_press
     global middle_finger_press
     cnt = 0
     print(data)
     for i in data.landmark:
-        if(8<=cnt and cnt<=8):
+        if(cnt == 8):
             delta = index_finger_pos[cnt-5]-round(i.y*depth)
             if (abs(delta)>12):
                 if(delta < 0 and index_finger_press == False):#press
@@ -150,7 +152,7 @@ def draw_index_finger(data,frame):
                 index_finger_pos[cnt-5] = round(i.y*depth)
             put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
             cv2.putText(img=frame,text="left pressed: "+str(index_finger_press),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
-        elif(12<=cnt and cnt<=12):
+        elif(cnt == 12):
             delta = middle_finger_pos[cnt-9]-round(i.y*depth)
             if (abs(delta)>12):
                 if(delta < 0 and middle_finger_press == False):#press
@@ -161,8 +163,8 @@ def draw_index_finger(data,frame):
                     middle_finger_press = False
                 middle_finger_pos[cnt-9] = round(i.y*depth)
             put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
-            cv2.putText(img=frame,text="left pressed: "+str(index_finger_press),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
-            cv2.putText(img=frame,text="right pressed: "+str(middle_finger_press),org=(30,40),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
+            put_Boolean(frame,"left pressed",index_finger_press)
+            put_Boolean(frame,"right pressed",middle_finger_press)
         cnt+=1   
 #==========================================================================
 def hand_skeleton(frame,width,height):
