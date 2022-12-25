@@ -162,19 +162,19 @@ def draw_index_finger(data,frame):
                 index_finger_pos[cnt-5] = round(i.y*depth)
             put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
             cv2.putText(img=frame,text="left pressed: "+str(index_finger_press),org=(30,30),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
-        elif(cnt == 12):
-            delta = middle_finger_pos[cnt-9]-round(i.y*depth)
-            if (abs(delta)>12):
-                if(delta < 0 and middle_finger_press == False):#press
-                    cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(255,255,255),2)
-                    middle_finger_press = True
-                elif(delta > 0 and middle_finger_press):#release
-                    cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(0,0,255),2)
-                    middle_finger_press = False
-                middle_finger_pos[cnt-9] = round(i.y*depth)
-            put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
-            put_Boolean(frame,"left pressed",index_finger_press,1)
-            put_Boolean(frame,"right pressed",middle_finger_press,2)
+        # elif(cnt == 12):
+        #     delta = middle_finger_pos[cnt-9]-round(i.y*depth)
+        #     if (abs(delta)>12):
+        #         if(delta < 0 and middle_finger_press == False):#press
+        #             cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(255,255,255),2)
+        #             middle_finger_press = True
+        #         elif(delta > 0 and middle_finger_press):#release
+        #             cv2.circle(frame,(round(i.x*640),round(i.y*360)),30,(0,0,255),2)
+        #             middle_finger_press = False
+        #         middle_finger_pos[cnt-9] = round(i.y*depth)
+        #     put_num(frame,round(i.y*depth),round(i.x*640),round(i.y*360))
+        #     put_Boolean(frame,"left pressed",index_finger_press,1)
+        #     put_Boolean(frame,"right pressed",middle_finger_press,2)
         cnt+=1   
 #========================================================================== 龔品宇
 def draw_thumb(data,frame):
@@ -229,6 +229,29 @@ def move(hand_landmarks):
     finger_center_temp[1] = finger_center[1]
 #==========================================================================許家碩
 
+#==========================================================================吳季旻
+def right(hand_landmarks):
+    global middle_finger_press
+    y0 = hand_landmarks.landmark[9].y * h   # 取得中指前端 y 座標
+    y1 = hand_landmarks.landmark[8].y * h   # 取得食指末端 y 座標
+    y2 = hand_landmarks.landmark[12].y * h   # 取得中指末端 y 座標
+    y3 = hand_landmarks.landmark[16].y * h   # 取得無名指末端 y 座標
+
+
+    if middle_finger_press==False and y2>y1 and y2>y3:
+        pyautogui.click(button='right')
+        print("right release")
+        # print("食指:",y1)
+        # print("中指:",y2)
+        # print("無名指:",y3)
+        middle_finger_press=True
+    if middle_finger_press==True and y2<y1 and y2<y3:
+        pyautogui.click(button='right')
+        print("right press")
+        # print("食指:",y1)
+        # print("中指:",y2)
+        # print("無名指:",y3)
+        middle_finger_press=False
 #==========================================================================林昀佑
 def hand_skeleton(frame,width,height):
     results = hands.process(frame)
@@ -237,6 +260,7 @@ def hand_skeleton(frame,width,height):
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             draw_index_finger(hand_landmarks,frame)
             draw_thumb(hand_landmarks,frame)
+            right(hand_landmarks)
     return frame
 #================================================================
 def camera_cap():
