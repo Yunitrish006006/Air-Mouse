@@ -188,7 +188,7 @@ def hand_skeleton(frame,width,height):
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             draw_index_finger(hand_landmarks,frame)
-            draw_thumb(data,frame)
+            draw_thumb(hand_landmarks,frame)
     return frame
 #================================================================
 def camera_cap():
@@ -196,8 +196,7 @@ def camera_cap():
     if ret:
         frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
         hand_skeleton(frame,camera.get(3),camera.get(4))
-        # temp = lens(frame,len_mode)
-        temp = frame
+        temp = lens(frame,len_mode)
         panel.imgtk = ImageTk.PhotoImage(image=Image.fromarray(temp))
         panel.config(image=temp)
         root.after(1,camera_cap)
