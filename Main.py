@@ -227,6 +227,8 @@ def move(hand_landmarks):
     moveMouse(varitation,direction,x,y)
     finger_center_temp[0] = finger_center[0]
     finger_center_temp[1] = finger_center[1]
+#==========================================================================許家碩
+
 #==========================================================================林昀佑
 def hand_skeleton(frame,width,height):
     results = hands.process(frame)
