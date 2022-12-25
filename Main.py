@@ -229,7 +229,7 @@ def move(hand_landmarks):
     finger_center_temp[1] = finger_center[1]
 #==========================================================================許家碩
 def moveCursor(var, move_type, direct, x, y): # call by Left_Right_move
-    sensitive = 4 # 靈敏度
+    sensitive = 6 # 靈敏度
     if(var > 3):
         if (move_type == "left_right"):
             x += var * sensitive * direct
@@ -248,7 +248,7 @@ def Left_Right_move(hand_landmarks): # call by hand_skeleton
         finger_center_temp[0] = finger_center
 
     varitation = abs(finger_center - finger_center_temp[0])
-    direction = np.sign(finger_center - finger_center_temp[0])*(-1)
+    direction = np.sign(finger_center - finger_center_temp[0])
 
     x = pyautogui.position()[0]
     y = pyautogui.position()[1]
@@ -287,12 +287,14 @@ def hand_skeleton(frame,width,height):
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             draw_index_finger(hand_landmarks,frame)
             draw_thumb(hand_landmarks,frame)
-            right(hand_landmarks)
+            Left_Right_move(hand_landmarks)
+            # right(hand_landmarks)
     return frame
 #================================================================
 def camera_cap():
     ret,frame = camera.read()
     if ret:
+        frame = cv2.flip(frame, 1)
         frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
         hand_skeleton(frame,camera.get(3),camera.get(4))
         temp = lens(frame,len_mode)
