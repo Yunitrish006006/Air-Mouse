@@ -27,6 +27,8 @@ index_finger_press = False
 middle_finger_pos = [0,0,0,0]
 middle_finger_press = False
 
+thumb_press = False
+
 pyautogui.FAILSAFE = False
 #===========================================================
 def changemode_button():
@@ -165,12 +167,28 @@ def draw_index_finger(data,frame):
             put_Boolean(frame,"right pressed",middle_finger_press,2)
         cnt+=1   
 #==========================================================================
+def draw_thumb(data,frame):
+    global thumb_press
+    thumb1_x=0
+    thumb4_x=0
+    for i in range(21):
+        if i == 2  :
+            thumb1_x=data.landmark[i].x*frame.shape[1]
+        if i == 4:
+            thumb4_x=data.landmark[i].x*frame.shape[1]
+    if abs(thumb1_x-thumb4_x)<30:
+        thumb_press = True
+    else:
+        thumb_press = False
+    cv2.putText(img=frame,text="thumb pressed: "+str(thumb_press),org=(30,50),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,255,0),thickness=2,lineType=cv2.LINE_AA)
+#==========================================================================
 def hand_skeleton(frame,width,height):
     results = hands.process(frame)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             draw_index_finger(hand_landmarks,frame)
+            draw_thumb(data,frame)
     return frame
 #================================================================
 def camera_cap():
