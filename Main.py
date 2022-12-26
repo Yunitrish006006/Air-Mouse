@@ -4,12 +4,10 @@ import cv2
 import numpy as np
 import math
 import keyboard
-import pydirectinput
 import pyautogui
 import random
 import mediapipe as mp
 import win32api
-import win32con
 import statistics
 len_mode = 0
 len_counts = 12
@@ -19,8 +17,6 @@ mp_hands = mp.solutions.hands
 w = 640
 h = 360
 sensitive = 10 # 靈敏度
-
-counter = 0
 
 var = [0,0]
 dir = [0,0]
@@ -251,8 +247,6 @@ def left_click(hand_landmarks,frame):
         global counter
         if previous_index_finger_var-delta > 0 and index_finger_press == False:
             index_finger_press = True
-            print("trigger"+str(counter))
-            counter+=1
             pyautogui.click(clicks=1)
             # x, y = win32api.GetCursorPos()
             # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
