@@ -9,6 +9,7 @@ import pyautogui
 import random
 import mediapipe as mp
 import win32api
+import win32con
 import statistics
 len_mode = 0
 len_counts = 12
@@ -18,10 +19,13 @@ mp_hands = mp.solutions.hands
 w = 640
 h = 360
 sensitive = 10 # 靈敏度
-left_sensitive = 80
+
+counter = 0
 
 var = [0,0]
 dir = [0,0]
+
+is_moving = False
 
 finger_center = [0,0]
 finger_center_temp = [0,0]
@@ -147,10 +151,10 @@ def debug_sketch(landmark,width,height):
             print(temp)
     return finger_points
 #==========================================================================
-def put_num(frame,num,x,y):
-    cv2.putText(img=frame,text=str(num),org=(x,y),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
-def put_Boolean(frame,key,value,line):
-    cv2.putText(img=frame,text=key+": "+str(value),org=(30,30*int(line)),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,0,0),thickness=2,lineType=cv2.LINE_AA)
+def put_num(frame,key,val,x,y):
+    cv2.putText(img=frame,text=key+str(val),org=(x,y),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(255,255,255),thickness=2,lineType=cv2.LINE_AA)
+def put_Boolean(frame,key,value,line,color):
+    cv2.putText(img=frame,text=key+": "+str(value),org=(30,30*int(line)),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=color,thickness=2,lineType=cv2.LINE_AA)
 #==========================================================================林煜宸、許家碩
 def move(hand_landmarks):
     #許家碩
@@ -182,6 +186,8 @@ def move(hand_landmarks):
 
 def moveCursor(var, direct, x, y): # call by move
     global sensitive
+    global is_moving
+    is_moving = TRUE
     if(var[0] > 3 or var[1] > 3):
         x += var[0] * sensitive * direct[0]
         y += var[1] * sensitive * direct[1] * 2
@@ -201,9 +207,8 @@ def thumb_click(data,frame):
         thumb_press = True
     else:
         thumb_press = False
-    cv2.putText(img=frame,text="thumb pressed: "+str(thumb_press),org=(30,50),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,255,0),thickness=2,lineType=cv2.LINE_AA)
-
-
+    
+    put_Boolean(frame,"thumb pressed: ",str(thumb_press),2,color=(0,255,0))
 #==========================================================================吳季旻
 def right_click(hand_landmarks):
     global middle_finger_press
@@ -230,29 +235,55 @@ def right_click(hand_landmarks):
 #==========================================================================林昀佑
 def left_click(hand_landmarks,frame):
     global index_finger_press
+    global previous_index_finger_var
     index_finger_ys = [hand_landmarks.landmark[i].y*h for i in range(5,8)]
     index_finger_xs = [hand_landmarks.landmark[i].x*w for i in range(5,8)]
     
     delta = math.sqrt(math.pow(index_finger_xs[0] - index_finger_xs[2],2) + math.pow(index_finger_ys[0] - index_finger_ys[2],2))
     
-    put_num(frame,round(delta),round(640-90),round(30))
-    put_Boolean(frame,"left pressed: ",str(index_finger_press),2)
+    put_num(frame,"index delta:",round(previous_index_finger_var-delta),round(640-180),round(60))
+    put_Boolean(frame,"left pressed: ",str(index_finger_press),3,color=(255,255,255))
     
-    if(previous_index_finger_var-delta > left_sensitive): previous_index_finger_var = delta
-    else: previous_index_finger_var = round(0.2*delta+0.8*previous_index_finger_var)
+    if(abs(previous_index_finger_var-delta) > sensitive-3 and not is_moving):
+        global counter
+        if previous_index_finger_var-delta > 0 and index_finger_press == False:
+            index_finger_press = True
+            print("trigger"+str(counter))
+            counter+=1
+            # pyautogui.click(clicks=1)
+            # x, y = win32api.GetCursorPos()
+            # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
+        elif(index_finger_press == True):
+            index_finger_press = False
     
-    if(delta < sensitive): index_finger_press = True
-    else: index_finger_press = False
+    if(abs(previous_index_finger_var-delta) > sensitive-3): previous_index_finger_var = delta
+    else: previous_index_finger_var = previous_index_finger_var
     
 def hand_skeleton(frame,width,height):
     results = hands.process(frame)
+    global is_moving
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            is_moving = FALSE
             left_click(hand_landmarks,frame)
             thumb_click(hand_landmarks,frame)
             move(hand_landmarks)
+            put_num(frame,"screen width:",w,round(640-180),round(90))
+            put_num(frame,"screen height:",h,round(640-180),round(120))
+            put_num(frame,check_cmaera_from(frame,hand_landmarks),0,round(80),round(360-40))
+            check_cmaera_from(frame,hand_landmarks)
     return frame
+
+def check_cmaera_from(frame,hand_landmarks):
+    wrist = hand_landmarks.landmark[0]
+    middle_top = hand_landmarks.landmark[12]
+    put_num(frame,"x: ",middle_top.x*w - wrist.x*w,640-180,360-80)
+    put_num(frame,"y: ",middle_top.y*h - wrist.y*h,640-180,360-40)
+    if middle_top.y*h - wrist.y*h > 150 :
+        return "screen_right_top_camera"
+    else:
+        return "unknown"
 #================================================================
 def camera_cap():
     ret,frame = camera.read()
