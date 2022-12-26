@@ -229,16 +229,19 @@ def right_click(hand_landmarks):
         middle_finger_press=False
 #==========================================================================林昀佑
 def left_click(hand_landmarks,frame):
+    global index_finger_press
     index_finger_ys = [hand_landmarks.landmark[i].y*h for i in range(5,8)]
     index_finger_xs = [hand_landmarks.landmark[i].x*w for i in range(5,8)]
     
     delta = math.sqrt(math.pow(index_finger_xs[0] - index_finger_xs[2],2) + math.pow(index_finger_ys[0] - index_finger_ys[2],2))
     
     put_num(frame,round(delta),round(640-90),round(30))
-    put_Boolean(frame,"left pressed: ",str(index_finger_press),4)
-    if(delta < sensitive):
-        previous_index_finger_var = delta
-        index_finger_press = True
+    put_Boolean(frame,"left pressed: ",str(index_finger_press),2)
+    
+    if(previous_index_finger_var-delta > left_sensitive): previous_index_finger_var = delta
+    else: previous_index_finger_var = round(0.2*delta+0.8*previous_index_finger_var)
+    
+    if(delta < sensitive): index_finger_press = True
     else: index_finger_press = False
     
 def hand_skeleton(frame,width,height):
