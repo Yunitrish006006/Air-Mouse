@@ -210,7 +210,7 @@ def thumb_click(data,frame):
     
     put_Boolean(frame,"thumb pressed: ",str(thumb_press),2,color=(0,255,0))
 #==========================================================================吳季旻
-def right_click(hand_landmarks):
+def right_click(hand_landmarks,frame):
     global middle_finger_press
     y0 = hand_landmarks.landmark[9].y * h   # 取得中指前端 y 座標
     y1 = hand_landmarks.landmark[8].y * h   # 取得食指末端 y 座標
@@ -219,19 +219,16 @@ def right_click(hand_landmarks):
 
 
     if middle_finger_press==False and y2>y1 and y2>y3:
-        pyautogui.click(button='right')
-        print("right release")
-        # print("食指:",y1)
-        # print("中指:",y2)
-        # print("無名指:",y3)
+        #print("right release")
         middle_finger_press=True
-    elif middle_finger_press==True and y2<y1 and y2<y3:
+    elif y2<y1 and y2<y3:
         pyautogui.click(button='right')
-        print("right press")
-        # print("食指:",y1)
-        # print("中指:",y2)
-        # print("無名指:",y3)
+        #print("right press")
         middle_finger_press=False
+    if middle_finger_press==False:
+        put_Boolean(frame,"right pressed: ","True",4,color=(255,0,255))
+    else:
+        put_Boolean(frame,"right pressed: ","False",4,color=(255,255,0))
 #==========================================================================林昀佑
 def left_click(hand_landmarks,frame):
     global index_finger_press
@@ -270,6 +267,7 @@ def hand_skeleton(frame,width,height):
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             is_moving = FALSE
             left_click(hand_landmarks,frame)
+            right_click(hand_landmarks,frame)
             thumb_click(hand_landmarks,frame)
             move(hand_landmarks)
             put_num(frame,"screen width:",w,round(640-180),round(90))
