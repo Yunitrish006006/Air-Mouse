@@ -17,6 +17,7 @@ mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 w = 640
 h = 360
+sensitive = 10 # 靈敏度
 names = ["wrist"
         ,"thumb_cmc","thumb_mcp","thumb_ip","thumb_tip"
         ,"index_mcp","index_pip","index_dip","index_tip"
@@ -25,8 +26,8 @@ names = ["wrist"
         ,"pinky_mcp","pinky_pip","pinky_dip","pinky_tip"
         ]
 
-varitation = [0,0]
-direction = [0,0]
+var = [0,0]
+dir = [0,0]
 
 finger_center = [0,0]
 finger_center_temp = [0,0]
@@ -191,14 +192,9 @@ def draw_thumb(data,frame):
     else:
         thumb_press = False
     cv2.putText(img=frame,text="thumb pressed: "+str(thumb_press),org=(30,50),fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1,color=(0,255,0),thickness=2,lineType=cv2.LINE_AA)
-#==========================================================================林煜宸
-def moveMouse(var, direct, x, y):
-    sensitive = 4 # 靈敏度
-    if(var[0] > 3 or var[1] > 3):
-        x += var[0] * sensitive * direct[0]
-        y += var[1] * sensitive * direct[1] * 2
-        win32api.SetCursorPos((round(x),round(y)))
+#==========================================================================林煜宸、許家碩
 def move(hand_landmarks):
+    #許家碩
     finger_tips = [5]
     finger_tips.insert(0,hand_landmarks.landmark[4].x * w) #大拇指
     finger_tips.insert(1,hand_landmarks.landmark[8].x * w)
@@ -206,55 +202,32 @@ def move(hand_landmarks):
     finger_tips.insert(3,hand_landmarks.landmark[16].x * w)
     finger_tips.insert(4,hand_landmarks.landmark[20].x * w) #小指
     finger_center[0] = statistics.mean(finger_tips);  #計算平均數
-
+    #林煜宸
     finger_y = [4]
     finger_y.insert(0,hand_landmarks.landmark[0].y * h)
     finger_y.insert(1,hand_landmarks.landmark[1].y * h)
     finger_y.insert(2,hand_landmarks.landmark[13].y * h)
     finger_y.insert(3,hand_landmarks.landmark[17].y * h)
-    # finger_tips_pos.insert(4,hand_landmarks.landmark[17].y * h); #小指
     finger_center[1] = statistics.mean(finger_y);  #計算平均數
+    
     if finger_center_temp[0] == 0:
         finger_center_temp[0] = finger_center[0]
         finger_center_temp[1] = finger_center[1]
     
-    varitation[0], varitation[1] = abs(finger_center[0] - finger_center_temp[0]), abs(finger_center[1] - finger_center_temp[1])
-    direction[0], direction[1] = np.sign(finger_center[0] - finger_center_temp[0])*(-1), np.sign(finger_center[1] - finger_center_temp[1])*(-1)
+    var[0], var[1] = abs(finger_center[0] - finger_center_temp[0]), abs(finger_center[1] - finger_center_temp[1])
+    dir[0], dir[1] = np.sign(finger_center[0] - finger_center_temp[0]), np.sign(finger_center[1] - finger_center_temp[1])*(-1)
     
-    x = pyautogui.position()[0]
-    y = pyautogui.position()[1]
-    
-    moveMouse(varitation,direction,x,y)
+    moveCursor(var,dir,pyautogui.position()[0],pyautogui.position()[1])
     finger_center_temp[0] = finger_center[0]
     finger_center_temp[1] = finger_center[1]
-#==========================================================================許家碩
-def moveCursor(var, move_type, direct, x, y): # call by Left_Right_move
-    sensitive = 6 # 靈敏度
-    if(var > 3):
-        if (move_type == "left_right"):
-            x += var * sensitive * direct
-            win32api.SetCursorPos((round(x),round(y)))
 
-def Left_Right_move(hand_landmarks): # call by hand_skeleton
-    finger_tips = [5]
-    finger_tips.insert(0,hand_landmarks.landmark[4].x * w) #大拇指
-    finger_tips.insert(1,hand_landmarks.landmark[8].x * w)
-    finger_tips.insert(2,hand_landmarks.landmark[12].x * w)
-    finger_tips.insert(3,hand_landmarks.landmark[16].x * w)
-    finger_tips.insert(4,hand_landmarks.landmark[20].x * w) #小指
-    finger_center = statistics.mean(finger_tips);  #計算平均數
 
-    if (finger_center_temp[0] == 0):
-        finger_center_temp[0] = finger_center
-
-    varitation = abs(finger_center - finger_center_temp[0])
-    direction = np.sign(finger_center - finger_center_temp[0])
-
-    x = pyautogui.position()[0]
-    y = pyautogui.position()[1]
-    
-    moveCursor(varitation,"left_right",direction,x,y)
-    finger_center_temp[0] = finger_center
+def moveCursor(var, direct, x, y): # call by move
+    global sensitive
+    if(var[0] > 3 or var[1] > 3):
+        x += var[0] * sensitive * direct[0]
+        y += var[1] * sensitive * direct[1] * 2
+        win32api.SetCursorPos((round(x),round(y)))
 
 #==========================================================================吳季旻
 def right(hand_landmarks):
@@ -287,7 +260,7 @@ def hand_skeleton(frame,width,height):
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             draw_index_finger(hand_landmarks,frame)
             draw_thumb(hand_landmarks,frame)
-            Left_Right_move(hand_landmarks)
+            move(hand_landmarks)
             # right(hand_landmarks)
     return frame
 #================================================================
@@ -341,9 +314,6 @@ if __name__ == '__main__':
     mouse_button.place(x=260,y=400,width=100,height=60)
     len_switcher = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,command=changemode_trackbar)
     len_switcher.place(x=420,y=400,width=200,height=60)
-    #==================================================================================================================line2
-    cam1 = Button(text="cam1",command=lambda:print("test"),font=('Arial',20,'bold'))
-    cam1.place(x=30,y=520,width=200,height=60)
     #==================================================================================================================
     with mp_hands.Hands(
         # static_image_mode=True,
