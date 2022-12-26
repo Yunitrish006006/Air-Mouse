@@ -12,13 +12,13 @@ import win32api
 import win32con
 import statistics
 from datetime import datetime
-# len_mode = 0
+len_mode = 0
 len_counts = 12
 depth = 200
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
-w = 640
-h = 360
+w = 1920
+h = 1080
 sensitive_mouse = 4  # 靈敏度
 sensitive_click = 4  # 靈敏度
 
