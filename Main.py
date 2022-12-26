@@ -242,15 +242,18 @@ def left_click(hand_landmarks,frame):
     delta = math.sqrt(math.pow(index_finger_xs[0] - index_finger_xs[2],2) + math.pow(index_finger_ys[0] - index_finger_ys[2],2))
     
     put_num(frame,"index delta:",round(previous_index_finger_var-delta),round(640-180),round(60))
-    put_Boolean(frame,"left pressed: ",str(index_finger_press),3,color=(255,255,255))
-    
+    if(index_finger_press):
+        put_Boolean(frame,"left pressed: ",str(index_finger_press),3,color=(255,0,255))
+    else:
+        put_Boolean(frame,"left pressed: ",str(index_finger_press),3,color=(255,255,0))
+        
     if(abs(previous_index_finger_var-delta) > sensitive-3 and not is_moving):
         global counter
         if previous_index_finger_var-delta > 0 and index_finger_press == False:
             index_finger_press = True
             print("trigger"+str(counter))
             counter+=1
-            # pyautogui.click(clicks=1)
+            pyautogui.click(clicks=1)
             # x, y = win32api.GetCursorPos()
             # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
         elif(index_finger_press == True):
