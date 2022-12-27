@@ -13,7 +13,6 @@ import win32con
 import statistics
 from datetime import datetime
 len_counts = 12
-depth = 200
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
@@ -30,7 +29,7 @@ index_finger_press = False
 
 FTH = False
 
-FIH = True
+FIH = False
 FIS = [0,0]
 
 FMH = False
@@ -245,21 +244,22 @@ def hand_skeleton(frame):
                 right_click(hand_landmarks)
                 thumb_click(hand_landmarks)
                 move(hand_landmarks)
-            put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
-            put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
-            
-            put_num(frame, "FMS_0: ", round(FMS[0]), 640-180, 100,(255,0,0))
-            put_num(frame, "FMS_1: ", round(FMS[1]), 640-180, 140,(255,0,0))
-            put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
-            
-            put_num(frame, "FIS_0: ", round(FIS[0]), 640-180, 20,(255,0,0))
-            put_num(frame, "FIS_1: ", round(FIS[1]), 640-180, 60,(255,0,0))
-            put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
-            
-            put_num(frame, "screen width: ", camera_width, round(640-180), round(360-20),(255,0,0))
-            put_num(frame, "screen height: ", camera_height, round(640-180), round(360-60),(255,0,0))
-            put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(255,0,0))
-            check_cmaera_from(frame, hand_landmarks)
+            if data_display.get():
+                put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
+                put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
+                
+                put_num(frame, "FMS_0: ", round(FMS[0]), 640-180, 100,(255,0,0))
+                put_num(frame, "FMS_1: ", round(FMS[1]), 640-180, 140,(255,0,0))
+                put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
+                
+                put_num(frame, "FIS_0: ", round(FIS[0]), 640-180, 20,(255,0,0))
+                put_num(frame, "FIS_1: ", round(FIS[1]), 640-180, 60,(255,0,0))
+                put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
+                
+                put_num(frame, "screen width: ", camera_width, round(640-180), round(360-20),(255,0,0))
+                put_num(frame, "screen height: ", camera_height, round(640-180), round(360-60),(255,0,0))
+                put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(255,0,0))
+                check_cmaera_from(frame, hand_landmarks)
     return frame
 
 def check_cmaera_from(frame, hand_landmarks):
@@ -337,9 +337,14 @@ if __name__ == '__main__':
     len_switch.deselect()
     len_switch.place(x=200, y=420, width=160, height=60)
     
+    data_display = BooleanVar()
+    data_display_switch = Checkbutton(root,text="開啟除錯", font=('Arial', 16, 'bold'),variable = data_display, onvalue = True, offvalue = False)
+    data_display_switch.deselect()
+    data_display_switch.place(x=200, y=460, width=160, height=60)
+    
     len_mode = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,label="濾鏡編號")
     len_mode.set(0)
-    len_mode.place(x=30, y=490, width=200, height=60)
+    len_mode.place(x=30, y=490, width=160, height=60)
     
     mouse_move_label = Label(root,text="move")
     mouse_move_label.place(x=360, y=390, width=60, height=40)
@@ -381,6 +386,6 @@ if __name__ == '__main__':
         root.bind('<Control-m>', lambda e: air_mouse_switch.toggle())
         root.bind('<Control-l>', lambda e: len_switch.toggle())
         root.mainloop()
-
+        
     camera.release()
     cv2.destroyAllWindows()
