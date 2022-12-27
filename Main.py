@@ -240,25 +240,13 @@ def hand_skeleton(frame):
                 frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             to_mid(hand_landmarks)
             if(HMS>50):
+                FIS = False
+                FMS = False
                 left_click(hand_landmarks)
                 right_click(hand_landmarks)
                 thumb_click(hand_landmarks)
                 move(hand_landmarks)
             if data_display.get():
-                put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
-                put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
-                
-                put_num(frame, "FMS_0: ", round(FMS[0]), 640-180, 100,(255,0,0))
-                put_num(frame, "FMS_1: ", round(FMS[1]), 640-180, 140,(255,0,0))
-                put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
-                
-                put_num(frame, "FIS_0: ", round(FIS[0]), 640-180, 20,(255,0,0))
-                put_num(frame, "FIS_1: ", round(FIS[1]), 640-180, 60,(255,0,0))
-                put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
-                
-                put_num(frame, "screen width: ", camera_width, round(640-180), round(360-20),(255,0,0))
-                put_num(frame, "screen height: ", camera_height, round(640-180), round(360-60),(255,0,0))
-                put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(255,0,0))
                 check_cmaera_from(frame, hand_landmarks)
     return frame
 
@@ -268,18 +256,30 @@ def check_cmaera_from(frame, hand_landmarks):
     distance = middle_top.y*camera_height - wrist.y*camera_height
     put_num(frame,"distance: ",distance,40,360-20,(255,0,0))
     if 100 > distance and distance > 30:
-        return "screen_right_top_camera"
+        put_num(frame,"screen_right_top_camera",0, round(80), round(360-40),(255,0,0))
     else:
-        return "unknown"
+        put_num(frame,"unknown",0, round(80), round(360-40),(255,0,0))
 
 def camera_cap():
     ret, frame = camera.read()
     if ret:
         frame = cv2.flip(frame, 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if air_mouse_on.get():hand_skeleton(frame)
         if len_on.get(): temp = lens(frame, len_mode.get())
         else: temp = frame
+        if air_mouse_on.get():hand_skeleton(frame)
+        if data_display.get():
+                put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
+                put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
+                
+                put_num(frame, "FMS: "+str(round(FMS[0]))+" , ",round(FMS[1]), 640-100, 20,(255,0,0))
+                put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
+                
+                put_num(frame, "FIS: "+str(round(FIS[0]))+" , ", round(FIS[1]), 640-220, 20,(255,0,0))
+                put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
+                
+                put_num(frame,"camera: "+str(int(camera_width))+" x ",int(camera_height),30,20,(255,0,0))
+
         temp = Image.fromarray(temp)
         temp = ImageTk.PhotoImage(image=temp)
         panel.imgtk = temp
@@ -297,7 +297,6 @@ def get_cam_list():
             is_reading, img = camera.read()
             cv2.imshow(str(usb_port), img)
             camera_width = camera.get(3)
-            camera_height = camera.get(4)
             if is_reading:
                 print("Port %s is working and reads images (%s x %s)" %
                       (usb_port, camera_height, camera_width))
