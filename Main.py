@@ -31,16 +31,13 @@ finger_center_temp = [0, 0]
 
 index_finger_press = False
 
+FTH = False
 
 FIH = True
 FIS = [0,0]
 
 FMH = False
 FMS = [0,0]
-
-middle_finger_press = False
-
-thumb_press = False
 
 pyautogui.FAILSAFE = False
 # =================================================================================================
@@ -147,27 +144,27 @@ def moveCursor(var, direct, x, y):  # call by move
         last_moving = datetime.now().timestamp()
 # ====================================================================================================== 龔品宇
 def thumb_click(data, frame):
-    global thumb_press
+    global FTH
     thumb1_x = data.landmark[1].x * camera_height
     thumb4_x = data.landmark[4].x * camera_height
-    thumb_press = abs(thumb1_x-thumb4_x) < 20
+    FTH = abs(thumb1_x-thumb4_x) < 20
 
-    put_Boolean(frame, "thumb pressed: ", str(thumb_press), 2, color=(0, 255, 0))
+    put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
 # ====================================================================================================== 吳季旻
-def right_click_old(hand_landmarks, frame):
-    global middle_finger_press
-    # 中指前端 食指末端 食指末端 無名指末端
-    pos_ys = [hand_landmarks.landmark[i].y *camera_height for i in [9,8,12,16]]
+# middle_finger_press = False
+# def right_click_old(hand_landmarks, frame):
+#     global middle_finger_press
+#     # 中指前端 食指末端 食指末端 無名指末端
+#     pos_ys = [hand_landmarks.landmark[i].y *camera_height for i in [9,8,12,16]]
 
-    if middle_finger_press == False and pos_ys[2] > pos_ys[1] and pos_ys[2] > pos_ys[3]:
-        middle_finger_press = True
-    elif pos_ys[2] < pos_ys[3] and pos_ys[2] < pos_ys[3]:
-        # cx,cy = win32api.GetCursorPos()
-        # win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
-        # pyautogui.click(button='right')
-        middle_finger_press = False
-    put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 255*int(middle_finger_press), 255*int(not middle_finger_press)))
-
+#     if middle_finger_press == False and pos_ys[2] > pos_ys[1] and pos_ys[2] > pos_ys[3]:
+#         middle_finger_press = True
+#     elif pos_ys[2] < pos_ys[3] and pos_ys[2] < pos_ys[3]:
+#         # cx,cy = win32api.GetCursorPos()
+#         # win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+#         # pyautogui.click(button='right')
+#         middle_finger_press = False
+#     put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 255*int(middle_finger_press), 255*int(not middle_finger_press)))
 # ====================================================================================================== 林昀佑
 def to_mid(hand_landmarks, frame):
     return
@@ -193,10 +190,13 @@ def right_click(hand_landmarks, frame):
     put_num(frame, "FMS_0:", round(FMS[0]), 640-180, 100)
     put_num(frame, "FMS_1:", round(FMS[1]), 640-180, 140)
     
-    if(datetime.now().timestamp() - last_moving < 0.5):
-        if(FMH == False and FMS[1] < 26): FMH = True
-        elif(FMH == True and FMS[1] >= 26): FMH = False
-    put_Boolean(frame, "R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
+    if(50-int(R_sensitive.get()) < 5 ):
+        temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
+    else: temp = True
+    
+    if(temp and FMH == False and FMS[1] < int(R_sensitive.get())): FMH = True
+    elif(temp and FMH == True and FMS[1] >= int(R_sensitive.get())): FMH = False
+    put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
     
 def left_click(hand_landmarks, frame):
     global index_finger_press
@@ -218,10 +218,12 @@ def left_click(hand_landmarks, frame):
     
     put_num(frame, "FIS_0:", round(FIS[0]), 640-180, 20)
     put_num(frame, "FIS_1:", round(FIS[1]), 640-180, 60)
-    if(datetime.now().timestamp() - last_moving < 0.5):
-        if(FIH == False and FIS[1] < 26): FIH = True
-        elif(FIH == True and FIS[1] >= 26): FIH = False
-    put_Boolean(frame, "L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
+    if(50-int(L_sensitive.get()) < 5 ):
+        temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
+    else: temp = True
+    if(temp and FIH == False and FIS[1] < int(L_sensitive.get())): FIH = True
+    elif(temp and FIH == True and FIS[1] >= int(L_sensitive.get())): FIH = False
+    put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
 # ====================================================================================================== 
 def hand_skeleton(frame, width, height):
     results = hands.process(frame)
@@ -326,6 +328,24 @@ if __name__ == '__main__':
     mouse_click = Scale(root, from_=1, to=10,orient=HORIZONTAL)
     mouse_click.set(4)
     mouse_click.place(x=420, y=420, width=200, height=40)
+    
+    L_sensitive_label = Label(root,text="L sensitive")
+    L_sensitive_label.place(x=360, y=480, width=60, height=40)
+    L_sensitive = Scale(root, from_=1, to=50,orient=HORIZONTAL)
+    L_sensitive.set(26)
+    L_sensitive.place(x=420, y=470, width=200, height=40)
+    
+    R_sensitive_label = Label(root,text="R sensitive")
+    R_sensitive_label.place(x=360, y=530, width=60, height=40)
+    R_sensitive = Scale(root, from_=1, to=50,orient=HORIZONTAL)
+    R_sensitive.set(26)
+    R_sensitive.place(x=420, y=520, width=200, height=40)
+    
+    hold_time_label = Label(root,text="hold time")
+    hold_time_label.place(x=360, y=580, width=60, height=40)
+    hold_time = Scale(root, from_=1, to=25,orient=HORIZONTAL)
+    hold_time.set(10)
+    hold_time.place(x=420, y=570, width=200, height=40)
 # ======================================================================================================
     with mp_hands.Hands(
         # static_image_mode=True,
