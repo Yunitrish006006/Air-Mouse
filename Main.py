@@ -18,8 +18,6 @@ mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 w = 1920
 h = 1080
-#靈敏度 sensitive_mouse=4 to mouse_move.get()
-#靈敏度 sensitive_click=4 to mouse_click.get()
 
 var = [0, 0]
 dir = [0, 0]
@@ -43,7 +41,7 @@ def clickable():
     if (datetime.now().timestamp() - last_moving < 0.5):
         return FALSE
     return TRUE
-# =================================================================================================lens functions
+# ====================================================================================================== lens functions
 def sobel_img(frame):
     x = abs(cv2.Sobel(frame, cv2.CV_16S, 1, 0))
     y = abs(cv2.Sobel(frame, cv2.CV_16S, 0, 1))
@@ -83,7 +81,7 @@ def line_img(frame):
             cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]),
                      (0, 255, 0), 1, cv2.LINE_AA)
     return cdstP
-# =================================================================================================
+
 def lens(frame, option):
     mapping = {
         0:frame,
@@ -96,52 +94,14 @@ def lens(frame, option):
         7:abs(255-canny(frame)),
         8:abs(sobel_img(frame) + 255),
         9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
-        10:(gray_scale(frame)%2)*125,
-        11:abs(200-sobel_img(frame))
+        10:gray_scale(frame),
+        11:cv2.addWeighted(sobel_img(255-frame),0.7,frame,1,0)
     }
     if option not in range(0,len(mapping)):
         return mapping.get(1)
     else:
         return mapping.get(option)
-    # return frame
-# =================================================================================================
-def debugger(landmark, finger_points):
-    global pre_landmark
-    names = ["wrist", "thumb_cmc", "thumb_mcp", "thumb_ip", "thumb_tip", "index_mcp", "index_pip", "index_dip", "index_tip", "middle_mcp", "middle_pip", "middle_dip", "middle_tip", "ring_mcp", "ring_pip", "ring_dip", "ring_tip", "pinky_mcp", "pinky_pip", "pinky_dip", "pinky_tip"
-             ]
-    pre_landmark = landmark
-    if keyboard.is_pressed('p'):
-        for i in range(0, len(finger_points)):
-            print(names[i], finger_points[i][0],
-                  finger_points[i][1], finger_points[i][2])
-        print("")
-# =================================================================================================
-def debug_sketch(landmark, width, height):
-    finger_points = []
-    fx = []
-    fy = []
-    fz = []
-    names = ["wrist", "thumb_cmc", "thumb_mcp", "thumb_ip", "thumb_tip", "index_mcp", "index_pip", "index_dip", "index_tip", "middle_mcp", "middle_pip", "middle_dip", "middle_tip", "ring_mcp", "ring_pip", "ring_dip", "ring_tip", "pinky_mcp", "pinky_pip", "pinky_dip", "pinky_tip"
-             ]
-    if landmark.multi_hand_landmarks:
-        for hand_landmarks in landmark.multi_hand_landmarks:
-            for i in hand_landmarks.landmark:
-                x = i.x*width                       # 計算 x 座標
-                y = i.y*height                      # 計算 y 座標
-                z = i.z*depth                      # 計算 z 座標
-                finger_points.append((int(x), int(y), -1*int(z)))
-                fx.append(int(x))                   # 記錄 x 座標
-                fy.append(int(y))                   # 記錄 y 座標
-                fz.append(int(-1*z))                   # 記錄 z 座標
-        if keyboard.is_pressed('c'):
-            temp = ""
-            for i, j in zip(range(0, 21), names):
-                if((i-1) % 4 == 0):
-                    temp += "\n"
-                temp += j+"("+str(fx[i])+","+str(fy[i])+","+str(fz[i])+")\t"
-            print(temp)
-    return finger_points
-# =================================================================================================
+# ====================================================================================================== opencv image editor
 def put_num(frame, key, val, x, y):
     cv2.putText(img=frame, text=key+str(val), org=(x, y), fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, color=(255, 255, 255), thickness=2, lineType=cv2.LINE_AA)
 def put_Boolean(frame, key, value, line, color):
@@ -186,7 +146,7 @@ def moveCursor(var, direct, x, y):  # call by move
 
     if(var[0] > 5 or var[1] > 5):
         last_moving = datetime.now().timestamp()
-# ======================================================================================================= 龔品宇
+# ====================================================================================================== 龔品宇
 def thumb_click(data, frame):
     global thumb_press
     thumb1_x = 0
@@ -203,7 +163,7 @@ def thumb_click(data, frame):
 
     put_Boolean(frame, "thumb pressed: ", str(
         thumb_press), 2, color=(0, 255, 0))
-# ======================================================================================================= 吳季旻
+# ====================================================================================================== 吳季旻
 def right_click(hand_landmarks, frame):
     global middle_finger_press
     y0 = hand_landmarks.landmark[9].y * h   # 取得中指前端 y 座標
@@ -222,7 +182,7 @@ def right_click(hand_landmarks, frame):
         put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 0, 255))
     else:
         put_Boolean(frame, "right pressed: ", "False", 4, color=(255, 255, 0))
-# ======================================================================================================= 林昀佑
+# ====================================================================================================== 林昀佑
 def left_click(hand_landmarks, frame):
     global index_finger_press
     global previous_index_finger_var
@@ -250,7 +210,7 @@ def left_click(hand_landmarks, frame):
         previous_index_finger_var = delta
     else:
         previous_index_finger_var = previous_index_finger_var
-# ======================================================================================================= 
+# ====================================================================================================== 
 def hand_skeleton(frame, width, height):
     results = hands.process(frame)
     if results.multi_hand_landmarks:
@@ -311,19 +271,19 @@ def get_cam_list():
 
 # ======================================================================================================
 if __name__ == '__main__':
-    # ==================================================================================================================ui sets
+# ====================================================================================================== ui sets
     root = Tk()
     root.title("手部滑鼠 - 期末專題")
     root.geometry("640x640")
     panel = Label(root)
     panel.pack(padx=10, pady=10)
     root.config(cursor="arrow")
-    # ==================================================================================================================camera sets
+# ======================================================================================================camera sets
     camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
     camera.set(cv2.CAP_PROP_FPS, 60)
-    # ==================================================================================================================line1
+# ====================================================================================================== ui contents
     len_button = Button(root,text="隨機濾鏡", command=lambda: len_mode.set(random.randint(0, len_counts)), font=('Arial', 16, 'bold'))
     len_button.place(x=30, y=400, width=160, height=60)
     
@@ -354,7 +314,7 @@ if __name__ == '__main__':
     mouse_click = Scale(root, from_=1, to=10,orient=HORIZONTAL)
     mouse_click.set(4)
     mouse_click.place(x=420, y=420, width=200, height=40)
-    # ==================================================================================================================
+# ======================================================================================================
     with mp_hands.Hands(
         # static_image_mode=True,
         min_detection_confidence=0.3,
@@ -362,6 +322,7 @@ if __name__ == '__main__':
         min_tracking_confidence=0.3,
         model_complexity=0) as hands:
         camera_cap()
+        if win32api.GetAsyncKeyState(win32con.VK_ESCAPE):air_mouse_switch.deselect()
         root.mainloop()
 
     camera.release()
