@@ -107,8 +107,8 @@ def lens(frame, option):
     else:
         return mapping.get(option)
 # ====================================================================================================== opencv image editor
-def put_num(frame, key, val, x, y):
-    cv2.putText(img=frame, text=key+str(val), org=(x, y), fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, color=(255, 255, 255), thickness=2, lineType=cv2.LINE_AA)
+def put_num(frame, key, val, x, y ,color):
+    cv2.putText(img=frame, text=key+str(val), org=(x, y), fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, color=color, thickness=2, lineType=cv2.LINE_AA)
 def put_Boolean(frame, key, value, line, color):
     cv2.putText(img=frame, text=key+": "+str(value), org=(30, 30*int(line)),fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=color, thickness=2, lineType=cv2.LINE_AA)
 # ====================================================================================================== 林煜宸、許家碩
@@ -235,17 +235,16 @@ def hand_skeleton(frame, width, height):
             right_click(hand_landmarks, frame)
             thumb_click(hand_landmarks, frame)
             move(hand_landmarks)
-            put_num(frame, "screen width:", camera_width, round(640-180), round(360-20))
-            put_num(frame, "screen height:", camera_height, round(640-180), round(360-60))
-            put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40))
+            put_num(frame, "screen width:", camera_width, round(640-180), round(360-20),(0,0,0))
+            put_num(frame, "screen height:", camera_height, round(640-180), round(360-60),(0,0,0))
+            put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(0,0,0))
             check_cmaera_from(frame, hand_landmarks)
     return frame
 
 def check_cmaera_from(frame, hand_landmarks):
     wrist = hand_landmarks.landmark[0]
-    middle_top = hand_landmarks.landmark[12]
-    put_num(frame, "x: ", middle_top.x*camera_width - wrist.x*camera_width, 640-180, 360-80)
-    put_num(frame, "y: ", middle_top.y*camera_height - wrist.y*camera_height, 640-180, 360-40)
+    middle_top = hand_landmarks.landmark[9]
+    put_num(frame,"distance",middle_top.y*camera_height - wrist.y*camera_height,40,360-20,(0,0,255))
     if middle_top.y*camera_height - wrist.y*camera_height > 150:
         return "screen_right_top_camera"
     else:
