@@ -239,9 +239,10 @@ def hand_skeleton(frame):
             mp_drawing.draw_landmarks(
                 frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             to_mid(hand_landmarks)
+            global FIH,FMH
             if(HMS>50):
-                FIS = False
-                FMS = False
+                FIH = False
+                FMH = False
                 left_click(hand_landmarks)
                 right_click(hand_landmarks)
                 thumb_click(hand_landmarks)
