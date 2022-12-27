@@ -377,11 +377,11 @@ if __name__ == '__main__':
     hold_time.place(x=420, y=570, width=200, height=40)
 # ======================================================================================================
     with mp_hands.Hands(
-        # static_image_mode=True,
         min_detection_confidence=0.3,
         max_num_hands=1,
         min_tracking_confidence=0.3,
-        model_complexity=0) as hands:
+        model_complexity=0
+        ) as hands:
         camera_cap()
         root.bind('<Control-m>', lambda e: air_mouse_switch.toggle())
         root.bind('<Control-l>', lambda e: len_switch.toggle())
