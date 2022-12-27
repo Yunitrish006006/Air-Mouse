@@ -39,6 +39,8 @@ FIS = [0,0]
 FMH = False
 FMS = [0,0]
 
+HMS = 0
+
 pyautogui.FAILSAFE = False
 # =================================================================================================
 def clickable():
@@ -167,7 +169,18 @@ def thumb_click(data, frame):
 #     put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 255*int(middle_finger_press), 255*int(not middle_finger_press)))
 # ====================================================================================================== 林昀佑
 def to_mid(hand_landmarks, frame):
-    return
+    hand_root = hand_landmarks.landmark[0].y
+    finger_top = [hand_landmarks.landmark[i].y * camera_width for i in [8,12,16,20]]
+    finger_root = [hand_landmarks.landmark[i].y * camera_height for i in [5,9,13,17]]
+    
+    deltas = [abs(finger_top[i] - finger_root[i]) - abs(finger_root[i] - hand_root) for i in [0,1,2,3]]
+    delta = statistics.mean(deltas)
+    global HMS
+    if(abs(HMS-(HMS*0.6+delta*0.4)))>2: HMS = (HMS*0.6+delta*0.4)
+    put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
+    global last_moving
+    if(HMS<50):
+        win32api.SetCursorPos((int(window_width/2),int(window_height/2)))
 
 def right_click(hand_landmarks, frame):
     global index_finger_press
@@ -239,10 +252,12 @@ def hand_skeleton(frame, width, height):
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(
                 frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-            left_click(hand_landmarks, frame)
-            right_click(hand_landmarks, frame)
-            thumb_click(hand_landmarks, frame)
-            move(hand_landmarks)
+            to_mid(hand_landmarks, frame)
+            if(HMS>50):
+                left_click(hand_landmarks, frame)
+                right_click(hand_landmarks, frame)
+                thumb_click(hand_landmarks, frame)
+                move(hand_landmarks)
             put_num(frame, "screen width: ", camera_width, round(640-180), round(360-20),(255,0,0))
             put_num(frame, "screen height: ", camera_height, round(640-180), round(360-60),(255,0,0))
             put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(255,0,0))
@@ -301,6 +316,8 @@ if __name__ == '__main__':
     panel = Label(root)
     panel.pack(padx=10, pady=10)
     root.config(cursor="arrow")
+    window_width = root.winfo_screenwidth()
+    window_height = root.winfo_screenheight()
 # ======================================================================================================camera sets
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -309,7 +326,6 @@ if __name__ == '__main__':
 # ====================================================================================================== ui contents
     len_button = Button(root,text="隨機濾鏡", command=lambda: len_mode.set(random.randint(0, len_counts)), font=('Arial', 16, 'bold'))
     len_button.place(x=30, y=400, width=160, height=60)
-    
     
     air_mouse_on = BooleanVar()
     air_mouse_switch = Checkbutton(root,text="開啟滑鼠", font=('Arial', 16, 'bold'),variable = air_mouse_on, onvalue = True, offvalue = False)
