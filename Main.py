@@ -12,17 +12,14 @@ import win32api
 import win32con
 import statistics
 from datetime import datetime
-len_mode = 0
 len_counts = 12
 depth = 200
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 w = 1920
 h = 1080
-sensitive_mouse = 4  # 靈敏度
-sensitive_click = 4  # 靈敏度
-
-counter = 0
+#靈敏度 sensitive_mouse=4 to mouse_move.get()
+#靈敏度 sensitive_click=4 to mouse_click.get()
 
 var = [0, 0]
 dir = [0, 0]
@@ -40,24 +37,13 @@ middle_finger_press = False
 thumb_press = False
 
 pyautogui.FAILSAFE = False
-# ===========================================================
+# =================================================================================================
 def clickable():
     global last_moving
     if (datetime.now().timestamp() - last_moving < 0.5):
         return FALSE
     return TRUE
-
-def changemode_button():
-    global len_mode
-    len_switcher.set(len_mode)
-
-
-def changemode_trackbar(value):
-    global len_mode
-    len_mode = int(value)
-# ===========================================================lens functions
-
-
+# =================================================================================================lens functions
 def sobel_img(frame):
     x = abs(cv2.Sobel(frame, cv2.CV_16S, 1, 0))
     y = abs(cv2.Sobel(frame, cv2.CV_16S, 0, 1))
@@ -65,16 +51,13 @@ def sobel_img(frame):
     y = cv2.convertScaleAbs(y)
     return cv2.addWeighted(x, 0.5, y, 0.5, 0.3)
 
-
 def gray_scale(frame):
     return cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2RGB)
-
 
 def canny(frame):
     temp = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
     temp = cv2.GaussianBlur(temp, (7, 7), 0)
     return cv2.Canny(temp, 35, 60, 3)
-
 
 def line_img(frame):
     dst = cv2.Canny(frame, 50, 200, None, 3)
@@ -100,38 +83,28 @@ def line_img(frame):
             cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]),
                      (0, 255, 0), 1, cv2.LINE_AA)
     return cdstP
-# ===========================================================
-
-
+# =================================================================================================
 def lens(frame, option):
-    # mapping = {
-    #     0:frame,
-    #     1:np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),
-    #     2:np.zeros((360,640,3),dtype=np.uint8),
-    #     3:np.ones((360,640,3),dtype=np.uint8)*255,
-    #     4:abs(255-frame),
-    #     5:sobel_img(frame),
-    #     6:line_img(frame),
-    #     7:abs(255-canny(frame)),
-    #     8:abs(sobel_img(frame) + 255),
-    #     9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
-    #     10:(gray_scale(frame)%2)*125,
-    #     11:cv2.addWeighted(np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),0.2,abs(200-sobel_img(frame)),1,0),
-    # }
-    # if option not in range(0,len(mapping)):
-    #     return mapping.get(1)
-    # else:
-    #     return mapping.get(option)
-    return frame
-# ==========================================================================
-
-
-def stablizer(landmark, finger_points):
-    global pre_landmark
-    pre_landmark = landmark
-# ==========================================================================
-
-
+    mapping = {
+        0:frame,
+        1:np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8),
+        2:np.zeros((360,640,3),dtype=np.uint8),
+        3:np.ones((360,640,3),dtype=np.uint8)*255,
+        4:abs(255-frame),
+        5:sobel_img(frame),
+        6:line_img(frame),
+        7:abs(255-canny(frame)),
+        8:abs(sobel_img(frame) + 255),
+        9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
+        10:(gray_scale(frame)%2)*125,
+        11:abs(200-sobel_img(frame))
+    }
+    if option not in range(0,len(mapping)):
+        return mapping.get(1)
+    else:
+        return mapping.get(option)
+    # return frame
+# =================================================================================================
 def debugger(landmark, finger_points):
     global pre_landmark
     names = ["wrist", "thumb_cmc", "thumb_mcp", "thumb_ip", "thumb_tip", "index_mcp", "index_pip", "index_dip", "index_tip", "middle_mcp", "middle_pip", "middle_dip", "middle_tip", "ring_mcp", "ring_pip", "ring_dip", "ring_tip", "pinky_mcp", "pinky_pip", "pinky_dip", "pinky_tip"
@@ -142,9 +115,7 @@ def debugger(landmark, finger_points):
             print(names[i], finger_points[i][0],
                   finger_points[i][1], finger_points[i][2])
         print("")
-# ==========================================================================
-
-
+# =================================================================================================
 def debug_sketch(landmark, width, height):
     finger_points = []
     fx = []
@@ -170,20 +141,12 @@ def debug_sketch(landmark, width, height):
                 temp += j+"("+str(fx[i])+","+str(fy[i])+","+str(fz[i])+")\t"
             print(temp)
     return finger_points
-# ==========================================================================
-
-
+# =================================================================================================
 def put_num(frame, key, val, x, y):
-    cv2.putText(img=frame, text=key+str(val), org=(x, y), fontFace=cv2.FONT_HERSHEY_PLAIN,
-                fontScale=1, color=(255, 255, 255), thickness=2, lineType=cv2.LINE_AA)
-
-
+    cv2.putText(img=frame, text=key+str(val), org=(x, y), fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, color=(255, 255, 255), thickness=2, lineType=cv2.LINE_AA)
 def put_Boolean(frame, key, value, line, color):
-    cv2.putText(img=frame, text=key+": "+str(value), org=(30, 30*int(line)),
-                fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=color, thickness=2, lineType=cv2.LINE_AA)
-# ==========================================================================林煜宸、許家碩
-
-
+    cv2.putText(img=frame, text=key+": "+str(value), org=(30, 30*int(line)),fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=color, thickness=2, lineType=cv2.LINE_AA)
+# ====================================================================================================== 林煜宸、許家碩
 def move(hand_landmarks):
     # 許家碩
     finger_tips = [5]
@@ -214,22 +177,16 @@ def move(hand_landmarks):
     finger_center_temp[0] = finger_center[0]
     finger_center_temp[1] = finger_center[1]
 
-
 def moveCursor(var, direct, x, y):  # call by move
-    global sensitive_mouse
     global last_moving
-
     if(var[0] > 1 or var[1] > 1):
-        x += var[0] * sensitive_mouse * direct[0]
-        y += var[1] * sensitive_mouse * direct[1] * 2
+        x += var[0] * mouse_move.get() * direct[0]
+        y += var[1] * mouse_move.get() * direct[1] * 2
         win32api.SetCursorPos((round(x), round(y)))
 
     if(var[0] > 5 or var[1] > 5):
         last_moving = datetime.now().timestamp()
-
-# ========================================================================== 龔品宇
-
-
+# ======================================================================================================= 龔品宇
 def thumb_click(data, frame):
     global thumb_press
     thumb1_x = 0
@@ -246,9 +203,7 @@ def thumb_click(data, frame):
 
     put_Boolean(frame, "thumb pressed: ", str(
         thumb_press), 2, color=(0, 255, 0))
-# ==========================================================================吳季旻
-
-
+# ======================================================================================================= 吳季旻
 def right_click(hand_landmarks, frame):
     global middle_finger_press
     y0 = hand_landmarks.landmark[9].y * h   # 取得中指前端 y 座標
@@ -260,52 +215,42 @@ def right_click(hand_landmarks, frame):
         #print("right release")
         middle_finger_press = True
     elif y2 < y1 and y2 < y3:
-        #pyautogui.click(button='right')
+        pyautogui.click(button='right')
         #print("right press")
         middle_finger_press = False
     if middle_finger_press == False:
         put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 0, 255))
     else:
         put_Boolean(frame, "right pressed: ", "False", 4, color=(255, 255, 0))
-# ==========================================================================林昀佑
-
-
+# ======================================================================================================= 林昀佑
 def left_click(hand_landmarks, frame):
     global index_finger_press
     global previous_index_finger_var
     index_finger_ys = [hand_landmarks.landmark[i].y*h for i in range(5, 8)]
     index_finger_xs = [hand_landmarks.landmark[i].x*w for i in range(5, 8)]
 
-    delta = math.sqrt(math.pow(index_finger_xs[0] - index_finger_xs[2], 2) + math.pow(
-        index_finger_ys[0] - index_finger_ys[2], 2))
-
-    put_num(frame, "index delta:", round(
-        previous_index_finger_var-delta), round(640-180), round(60))
+    delta = math.sqrt(math.pow(index_finger_xs[0] - index_finger_xs[2], 2) + math.pow(index_finger_ys[0] - index_finger_ys[2], 2))
+    put_num(frame, "index delta:", round(previous_index_finger_var-delta), round(640-180), round(60))
     if(index_finger_press):
-        put_Boolean(frame, "left pressed: ", str(
-            index_finger_press), 3, color=(255, 0, 255))
+        put_Boolean(frame, "left pressed: ", str(index_finger_press), 3, color=(255, 0, 255))
     else:
-        put_Boolean(frame, "left pressed: ", str(
-            index_finger_press), 3, color=(255, 255, 0))
+        put_Boolean(frame, "left pressed: ", str(index_finger_press), 3, color=(255, 255, 0))
 
-    if(abs(previous_index_finger_var-delta) > sensitive_click-3 and clickable()):
+    if(abs(previous_index_finger_var-delta) > mouse_click.get()-3 and clickable()):
         global counter
         if previous_index_finger_var-delta > 0 and index_finger_press == False:
             index_finger_press = True
-            print("trigger"+str(counter))
-            counter += 1
             pyautogui.click(clicks=1)
             # x, y = win32api.GetCursorPos()
             # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
         elif(index_finger_press == True):
             index_finger_press = False
 
-    if(abs(previous_index_finger_var-delta) > sensitive_click-3):
+    if(abs(previous_index_finger_var-delta) > mouse_click.get()-3):
         previous_index_finger_var = delta
     else:
         previous_index_finger_var = previous_index_finger_var
-
-
+# ======================================================================================================= 
 def hand_skeleton(frame, width, height):
     results = hands.process(frame)
     if results.multi_hand_landmarks:
@@ -318,11 +263,9 @@ def hand_skeleton(frame, width, height):
             move(hand_landmarks)
             put_num(frame, "screen width:", w, round(640-180), round(90))
             put_num(frame, "screen height:", h, round(640-180), round(120))
-            put_num(frame, check_cmaera_from(frame, hand_landmarks),
-                    0, round(80), round(360-40))
+            put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40))
             check_cmaera_from(frame, hand_landmarks)
     return frame
-
 
 def check_cmaera_from(frame, hand_landmarks):
     wrist = hand_landmarks.landmark[0]
@@ -333,22 +276,20 @@ def check_cmaera_from(frame, hand_landmarks):
         return "screen_right_top_camera"
     else:
         return "unknown"
-# ================================================================
-
 
 def camera_cap():
     ret, frame = camera.read()
     if ret:
         frame = cv2.flip(frame, 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        hand_skeleton(frame, camera.get(3), camera.get(4))
-        temp = lens(frame, len_mode)
+        if air_mouse_on.get():hand_skeleton(frame, camera.get(3), camera.get(4))
+        if len_on.get(): temp = lens(frame, len_mode.get())
+        else: temp = frame
         temp = Image.fromarray(temp)
         temp = ImageTk.PhotoImage(image=temp)
         panel.imgtk = temp
         panel.config(image=temp)
         root.after(1, camera_cap)
-
 
 def get_cam_list():
     usb_port = 0
@@ -368,7 +309,7 @@ def get_cam_list():
         camera.release()
     return usb_port
 
-
+# ======================================================================================================
 if __name__ == '__main__':
     # ==================================================================================================================ui sets
     root = Tk()
@@ -378,27 +319,48 @@ if __name__ == '__main__':
     panel.pack(padx=10, pady=10)
     root.config(cursor="arrow")
     # ==================================================================================================================camera sets
-    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
     camera.set(cv2.CAP_PROP_FPS, 60)
     # ==================================================================================================================line1
-    len_button = Button(text="隨機濾鏡", command=lambda: len_switcher.set(
-        random.randint(0, len_counts)), font=('Arial', 20, 'bold'))
-    len_button.place(x=30, y=400, width=200, height=60)
-    mouse_button = Button(
-        text="mouse", command=pyautogui.rightClick(), font=('Arial', 20, 'bold'))
-    mouse_button.place(x=260, y=400, width=100, height=60)
-    len_switcher = Scale(root, from_=0, to=len_counts,
-                         orient=HORIZONTAL, command=changemode_trackbar)
-    len_switcher.place(x=420, y=400, width=200, height=60)
+    len_button = Button(root,text="隨機濾鏡", command=lambda: len_mode.set(random.randint(0, len_counts)), font=('Arial', 16, 'bold'))
+    len_button.place(x=30, y=400, width=160, height=60)
+    
+    
+    air_mouse_on = BooleanVar()
+    air_mouse_switch = Checkbutton(root,text="開啟滑鼠", font=('Arial', 16, 'bold'),variable = air_mouse_on, onvalue = True, offvalue = False)
+    air_mouse_switch.deselect()
+    air_mouse_switch.place(x=200, y=380, width=160, height=60)
+    
+    len_on = BooleanVar()
+    len_switch = Checkbutton(root,text="開啟濾鏡", font=('Arial', 16, 'bold'),variable = len_on, onvalue = True, offvalue = False)
+    len_switch.deselect()
+    len_switch.place(x=200, y=420, width=160, height=60)
+    
+    
+    len_mode = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,label="濾鏡編號")
+    len_mode.set(0)
+    len_mode.place(x=30, y=490, width=200, height=60)
+    
+    mouse_move_label = Label(root,text="move")
+    mouse_move_label.place(x=360, y=390, width=60, height=40)
+    mouse_move = Scale(root, from_=1, to=10,orient=HORIZONTAL)
+    mouse_move.set(4)
+    mouse_move.place(x=420, y=380, width=200, height=40)
+    
+    mouse_click_label = Label(root,text="click")
+    mouse_click_label.place(x=360, y=430, width=60, height=40)
+    mouse_click = Scale(root, from_=1, to=10,orient=HORIZONTAL)
+    mouse_click.set(4)
+    mouse_click.place(x=420, y=420, width=200, height=40)
     # ==================================================================================================================
     with mp_hands.Hands(
         # static_image_mode=True,
         min_detection_confidence=0.3,
         max_num_hands=1,
         min_tracking_confidence=0.3,
-            model_complexity=0) as hands:
+        model_complexity=0) as hands:
         camera_cap()
         root.mainloop()
 
