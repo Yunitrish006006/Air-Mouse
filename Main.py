@@ -194,8 +194,12 @@ def right_click(hand_landmarks, frame):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
     
-    if(temp and FMH == False and FMS[1] < int(R_sensitive.get())): FMH = True
-    elif(temp and FMH == True and FMS[1] >= int(R_sensitive.get())): FMH = False
+    if(temp and FMH == False and FMS[1] < int(R_sensitive.get())):
+        FMH = True
+        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+    elif(temp and FMH == True and FMS[1] >= int(R_sensitive.get())):
+        FMH = False
+        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
     put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
     
 def left_click(hand_landmarks, frame):
@@ -221,8 +225,12 @@ def left_click(hand_landmarks, frame):
     if(50-int(L_sensitive.get()) < 5 ):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
-    if(temp and FIH == False and FIS[1] < int(L_sensitive.get())): FIH = True
-    elif(temp and FIH == True and FIS[1] >= int(L_sensitive.get())): FIH = False
+    if(temp and FIH == False and FIS[1] < int(L_sensitive.get())):
+        FIH = True
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+    elif(temp and FIH == True and FIS[1] >= int(L_sensitive.get())):
+        FIH = False
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
     put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
 # ====================================================================================================== 
 def hand_skeleton(frame, width, height):
