@@ -136,7 +136,7 @@ def move(hand_landmarks):
 def moveCursor(var, direct, x, y):  # call by move
     global last_moving
     if(var[0] > 1 or var[1] > 1):
-        x += var[0] * mouse_move.get() * direct[0]
+        x += var[0] * mouse_move.get() * direct[0] * 2
         y += var[1] * mouse_move.get() * direct[1] * 2
         win32api.SetCursorPos((round(x), round(y)))
 
@@ -187,8 +187,8 @@ def right_click(hand_landmarks, frame):
     if(abs(FMS[0]-(FMS[0]*0.6+alpha*0.4)))>2: FMS[0] = (FMS[0]*0.6+alpha*0.4)
     if(abs(FMS[1]-(FMS[1]*0.6+beta*0.4)))>2: FMS[1] = (FMS[1]*0.6+beta*0.4)
     
-    put_num(frame, "FMS_0:", round(FMS[0]), 640-180, 100)
-    put_num(frame, "FMS_1:", round(FMS[1]), 640-180, 140)
+    put_num(frame, "FMS_0: ", round(FMS[0]), 640-180, 100,(255,0,0))
+    put_num(frame, "FMS_1: ", round(FMS[1]), 640-180, 140,(255,0,0))
     
     if(50-int(R_sensitive.get()) < 5 ):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
@@ -216,8 +216,8 @@ def left_click(hand_landmarks, frame):
     if(abs(FIS[0]-(FIS[0]*0.6+alpha*0.4)))>2: FIS[0] = (FIS[0]*0.6+alpha*0.4)
     if(abs(FIS[1]-(FIS[1]*0.6+beta*0.4)))>2: FIS[1] = (FIS[1]*0.6+beta*0.4)
     
-    put_num(frame, "FIS_0:", round(FIS[0]), 640-180, 20)
-    put_num(frame, "FIS_1:", round(FIS[1]), 640-180, 60)
+    put_num(frame, "FIS_0: ", round(FIS[0]), 640-180, 20,(255,0,0))
+    put_num(frame, "FIS_1: ", round(FIS[1]), 640-180, 60,(255,0,0))
     if(50-int(L_sensitive.get()) < 5 ):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
@@ -235,17 +235,18 @@ def hand_skeleton(frame, width, height):
             right_click(hand_landmarks, frame)
             thumb_click(hand_landmarks, frame)
             move(hand_landmarks)
-            put_num(frame, "screen width:", camera_width, round(640-180), round(360-20),(0,0,0))
-            put_num(frame, "screen height:", camera_height, round(640-180), round(360-60),(0,0,0))
-            put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(0,0,0))
+            put_num(frame, "screen width: ", camera_width, round(640-180), round(360-20),(255,0,0))
+            put_num(frame, "screen height: ", camera_height, round(640-180), round(360-60),(255,0,0))
+            put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(255,0,0))
             check_cmaera_from(frame, hand_landmarks)
     return frame
 
 def check_cmaera_from(frame, hand_landmarks):
     wrist = hand_landmarks.landmark[0]
     middle_top = hand_landmarks.landmark[9]
-    put_num(frame,"distance",middle_top.y*camera_height - wrist.y*camera_height,40,360-20,(0,0,255))
-    if middle_top.y*camera_height - wrist.y*camera_height > 150:
+    distance = middle_top.y*camera_height - wrist.y*camera_height
+    put_num(frame,"distance: ",distance,40,360-20,(255,0,0))
+    if 100 > distance and distance > 30:
         return "screen_right_top_camera"
     else:
         return "unknown"
