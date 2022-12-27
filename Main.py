@@ -17,9 +17,6 @@ depth = 200
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
-camera_width = 640
-camera_height = 360
-
 var = [0, 0]
 dir = [0, 0]
 
@@ -145,13 +142,12 @@ def moveCursor(var, direct, x, y):  # call by move
     if(var[0] > 5 or var[1] > 5):
         last_moving = datetime.now().timestamp()
 # ====================================================================================================== 龔品宇
-def thumb_click(data, frame):
+def thumb_click(data):
     global FTH
     thumb1_x = data.landmark[1].x * camera_height
     thumb4_x = data.landmark[4].x * camera_height
     FTH = abs(thumb1_x-thumb4_x) < 20
 
-    put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
 # ====================================================================================================== 吳季旻
 # middle_finger_press = False
 # def right_click_old(hand_landmarks, frame):
@@ -168,21 +164,19 @@ def thumb_click(data, frame):
 #         middle_finger_press = False
 #     put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 255*int(middle_finger_press), 255*int(not middle_finger_press)))
 # ====================================================================================================== 林昀佑
-def to_mid(hand_landmarks, frame):
+def to_mid(hand_landmarks):
     hand_root = hand_landmarks.landmark[0].y
     finger_top = [hand_landmarks.landmark[i].y * camera_width for i in [8,12,16,20]]
     finger_root = [hand_landmarks.landmark[i].y * camera_height for i in [5,9,13,17]]
-    
     deltas = [abs(finger_top[i] - finger_root[i]) - abs(finger_root[i] - hand_root) for i in [0,1,2,3]]
     delta = statistics.mean(deltas)
     global HMS
     if(abs(HMS-(HMS*0.6+delta*0.4)))>2: HMS = (HMS*0.6+delta*0.4)
-    put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
     global last_moving
     if(HMS<50):
         win32api.SetCursorPos((int(window_width/2),int(window_height/2)))
 
-def right_click(hand_landmarks, frame):
+def right_click(hand_landmarks):
     global index_finger_press
     finger_xs = [hand_landmarks.landmark[i].x * camera_width for i in [10,11,12]]
     finger_ys = [hand_landmarks.landmark[i].y * camera_height for i in [10,11,12]]
@@ -200,9 +194,6 @@ def right_click(hand_landmarks, frame):
     if(abs(FMS[0]-(FMS[0]*0.6+alpha*0.4)))>2: FMS[0] = (FMS[0]*0.6+alpha*0.4)
     if(abs(FMS[1]-(FMS[1]*0.6+beta*0.4)))>2: FMS[1] = (FMS[1]*0.6+beta*0.4)
     
-    put_num(frame, "FMS_0: ", round(FMS[0]), 640-180, 100,(255,0,0))
-    put_num(frame, "FMS_1: ", round(FMS[1]), 640-180, 140,(255,0,0))
-    
     if(50-int(R_sensitive.get()) < 5 ):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
@@ -213,9 +204,8 @@ def right_click(hand_landmarks, frame):
     elif(temp and FMH == True and FMS[1] >= int(R_sensitive.get())):
         FMH = False
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
-    put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
-    
-def left_click(hand_landmarks, frame):
+      
+def left_click(hand_landmarks):
     global index_finger_press
     finger_xs = [hand_landmarks.landmark[i].x * camera_width for i in [6,7,8]]
     finger_ys = [hand_landmarks.landmark[i].y * camera_height for i in [6,7,8]]
@@ -233,8 +223,6 @@ def left_click(hand_landmarks, frame):
     if(abs(FIS[0]-(FIS[0]*0.6+alpha*0.4)))>2: FIS[0] = (FIS[0]*0.6+alpha*0.4)
     if(abs(FIS[1]-(FIS[1]*0.6+beta*0.4)))>2: FIS[1] = (FIS[1]*0.6+beta*0.4)
     
-    put_num(frame, "FIS_0: ", round(FIS[0]), 640-180, 20,(255,0,0))
-    put_num(frame, "FIS_1: ", round(FIS[1]), 640-180, 60,(255,0,0))
     if(50-int(L_sensitive.get()) < 5 ):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
@@ -244,20 +232,30 @@ def left_click(hand_landmarks, frame):
     elif(temp and FIH == True and FIS[1] >= int(L_sensitive.get())):
         FIH = False
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
-    put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
 # ====================================================================================================== 
-def hand_skeleton(frame, width, height):
+def hand_skeleton(frame):
     results = hands.process(frame)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(
                 frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-            to_mid(hand_landmarks, frame)
+            to_mid(hand_landmarks)
             if(HMS>50):
-                left_click(hand_landmarks, frame)
-                right_click(hand_landmarks, frame)
-                thumb_click(hand_landmarks, frame)
+                left_click(hand_landmarks)
+                right_click(hand_landmarks)
+                thumb_click(hand_landmarks)
                 move(hand_landmarks)
+            put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
+            put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
+            
+            put_num(frame, "FMS_0: ", round(FMS[0]), 640-180, 100,(255,0,0))
+            put_num(frame, "FMS_1: ", round(FMS[1]), 640-180, 140,(255,0,0))
+            put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
+            
+            put_num(frame, "FIS_0: ", round(FIS[0]), 640-180, 20,(255,0,0))
+            put_num(frame, "FIS_1: ", round(FIS[1]), 640-180, 60,(255,0,0))
+            put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
+            
             put_num(frame, "screen width: ", camera_width, round(640-180), round(360-20),(255,0,0))
             put_num(frame, "screen height: ", camera_height, round(640-180), round(360-60),(255,0,0))
             put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40),(255,0,0))
@@ -279,7 +277,7 @@ def camera_cap():
     if ret:
         frame = cv2.flip(frame, 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if air_mouse_on.get():hand_skeleton(frame, camera.get(3), camera.get(4))
+        if air_mouse_on.get():hand_skeleton(frame)
         if len_on.get(): temp = lens(frame, len_mode.get())
         else: temp = frame
         temp = Image.fromarray(temp)
@@ -323,6 +321,8 @@ if __name__ == '__main__':
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
     camera.set(cv2.CAP_PROP_FPS, 60)
+    camera_width = camera.get(3)
+    camera_height = camera.get(4)
 # ====================================================================================================== ui contents
     len_button = Button(root,text="隨機濾鏡", command=lambda: len_mode.set(random.randint(0, len_counts)), font=('Arial', 16, 'bold'))
     len_button.place(x=30, y=400, width=160, height=60)
