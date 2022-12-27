@@ -16,8 +16,9 @@ len_counts = 12
 depth = 200
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
-w = 1920
-h = 1080
+
+camera_width = 640
+camera_height = 360
 
 var = [0, 0]
 dir = [0, 0]
@@ -29,7 +30,14 @@ finger_center = [0, 0]
 finger_center_temp = [0, 0]
 
 index_finger_press = False
-previous_index_finger_var = 0
+
+
+FIH = True
+FIS = [0,0]
+
+FMH = False
+FMS = [0,0]
+
 middle_finger_press = False
 
 thumb_press = False
@@ -109,19 +117,10 @@ def put_Boolean(frame, key, value, line, color):
 # ====================================================================================================== 林煜宸、許家碩
 def move(hand_landmarks):
     # 許家碩
-    finger_tips = [5]
-    finger_tips.insert(0, hand_landmarks.landmark[4].x * w)  # 大拇指
-    finger_tips.insert(1, hand_landmarks.landmark[8].x * w)
-    finger_tips.insert(2, hand_landmarks.landmark[12].x * w)
-    finger_tips.insert(3, hand_landmarks.landmark[16].x * w)
-    finger_tips.insert(4, hand_landmarks.landmark[20].x * w)  # 小指
+    finger_tips = [hand_landmarks.landmark[i].x * camera_width for i in [4,8,12,16,20]]# 大拇指 ~ 小指
     finger_center[0] = statistics.mean(finger_tips)  # 計算平均數
     # 林煜宸
-    finger_y = [4]
-    finger_y.insert(0, hand_landmarks.landmark[0].y * h)
-    finger_y.insert(1, hand_landmarks.landmark[1].y * h)
-    finger_y.insert(2, hand_landmarks.landmark[13].y * h)
-    finger_y.insert(3, hand_landmarks.landmark[17].y * h)
+    finger_y = [hand_landmarks.landmark[i].y * camera_height for i in [0,1,13,17]]
     finger_center[1] = statistics.mean(finger_y)  # 計算平均數
 
     if finger_center_temp[0] == 0:
@@ -149,67 +148,80 @@ def moveCursor(var, direct, x, y):  # call by move
 # ====================================================================================================== 龔品宇
 def thumb_click(data, frame):
     global thumb_press
-    thumb1_x = 0
-    thumb4_x = 0
-    for i in range(21):
-        if i == 2:
-            thumb1_x = data.landmark[i].x*frame.shape[1]
-        if i == 4:
-            thumb4_x = data.landmark[i].x*frame.shape[1]
-    if abs(thumb1_x-thumb4_x) < 30:
-        thumb_press = True
-    else:
-        thumb_press = False
+    thumb1_x = data.landmark[1].x * camera_height
+    thumb4_x = data.landmark[4].x * camera_height
+    thumb_press = abs(thumb1_x-thumb4_x) < 20
 
-    put_Boolean(frame, "thumb pressed: ", str(
-        thumb_press), 2, color=(0, 255, 0))
+    put_Boolean(frame, "thumb pressed: ", str(thumb_press), 2, color=(0, 255, 0))
 # ====================================================================================================== 吳季旻
-def right_click(hand_landmarks, frame):
+def right_click_old(hand_landmarks, frame):
     global middle_finger_press
-    y0 = hand_landmarks.landmark[9].y * h   # 取得中指前端 y 座標
-    y1 = hand_landmarks.landmark[8].y * h   # 取得食指末端 y 座標
-    y2 = hand_landmarks.landmark[12].y * h   # 取得中指末端 y 座標
-    y3 = hand_landmarks.landmark[16].y * h   # 取得無名指末端 y 座標
+    # 中指前端 食指末端 食指末端 無名指末端
+    pos_ys = [hand_landmarks.landmark[i].y *camera_height for i in [9,8,12,16]]
 
-    if middle_finger_press == False and y2 > y1 and y2 > y3:
-        #print("right release")
+    if middle_finger_press == False and pos_ys[2] > pos_ys[1] and pos_ys[2] > pos_ys[3]:
         middle_finger_press = True
-    elif y2 < y1 and y2 < y3:
-        pyautogui.click(button='right')
-        #print("right press")
+    elif pos_ys[2] < pos_ys[3] and pos_ys[2] < pos_ys[3]:
+        # cx,cy = win32api.GetCursorPos()
+        # win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+        # pyautogui.click(button='right')
         middle_finger_press = False
-    if middle_finger_press == False:
-        put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 0, 255))
-    else:
-        put_Boolean(frame, "right pressed: ", "False", 4, color=(255, 255, 0))
+    put_Boolean(frame, "right pressed: ", "True", 4, color=(255, 255*int(middle_finger_press), 255*int(not middle_finger_press)))
+
 # ====================================================================================================== 林昀佑
+def to_mid(hand_landmarks, frame):
+    return
+
+def right_click(hand_landmarks, frame):
+    global index_finger_press
+    finger_xs = [hand_landmarks.landmark[i].x * camera_width for i in [10,11,12]]
+    finger_ys = [hand_landmarks.landmark[i].y * camera_height for i in [10,11,12]]
+    def dis(x1,y1,x2,y2): return math.sqrt(math.pow(x1-x2,2) + math.pow(y1-y2,2))
+    
+    # Heron's formula
+    a = dis(finger_xs[0],finger_ys[0],finger_xs[1],finger_ys[1])
+    b = dis(finger_xs[1],finger_ys[1],finger_xs[2],finger_ys[2])
+    c = dis(finger_xs[0],finger_ys[0],finger_xs[2],finger_ys[2])
+    s = (a+b+c)/2
+    alpha = math.sqrt(s*(s-a)*(s-b)*(s-c))
+    beta = abs(finger_ys[0]-finger_ys[1]) + abs(finger_ys[1]-finger_ys[2])
+    
+    global FMS,FMH
+    if(abs(FMS[0]-(FMS[0]*0.6+alpha*0.4)))>2: FMS[0] = (FMS[0]*0.6+alpha*0.4)
+    if(abs(FMS[1]-(FMS[1]*0.6+beta*0.4)))>2: FMS[1] = (FMS[1]*0.6+beta*0.4)
+    
+    put_num(frame, "FMS_0:", round(FMS[0]), 640-180, 100)
+    put_num(frame, "FMS_1:", round(FMS[1]), 640-180, 140)
+    
+    if(datetime.now().timestamp() - last_moving < 0.5):
+        if(FMH == False and FMS[1] < 26): FMH = True
+        elif(FMH == True and FMS[1] >= 26): FMH = False
+    put_Boolean(frame, "R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
+    
 def left_click(hand_landmarks, frame):
     global index_finger_press
-    global previous_index_finger_var
-    index_finger_ys = [hand_landmarks.landmark[i].y*h for i in range(5, 8)]
-    index_finger_xs = [hand_landmarks.landmark[i].x*w for i in range(5, 8)]
-
-    delta = math.sqrt(math.pow(index_finger_xs[0] - index_finger_xs[2], 2) + math.pow(index_finger_ys[0] - index_finger_ys[2], 2))
-    put_num(frame, "index delta:", round(previous_index_finger_var-delta), round(640-180), round(60))
-    if(index_finger_press):
-        put_Boolean(frame, "left pressed: ", str(index_finger_press), 3, color=(255, 0, 255))
-    else:
-        put_Boolean(frame, "left pressed: ", str(index_finger_press), 3, color=(255, 255, 0))
-
-    if(abs(previous_index_finger_var-delta) > mouse_click.get()-3 and clickable()):
-        global counter
-        if previous_index_finger_var-delta > 0 and index_finger_press == False:
-            index_finger_press = True
-            pyautogui.click(clicks=1)
-            # x, y = win32api.GetCursorPos()
-            # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
-        elif(index_finger_press == True):
-            index_finger_press = False
-
-    if(abs(previous_index_finger_var-delta) > mouse_click.get()-3):
-        previous_index_finger_var = delta
-    else:
-        previous_index_finger_var = previous_index_finger_var
+    finger_xs = [hand_landmarks.landmark[i].x * camera_width for i in [6,7,8]]
+    finger_ys = [hand_landmarks.landmark[i].y * camera_height for i in [6,7,8]]
+    def dis(x1,y1,x2,y2): return math.sqrt(math.pow(x1-x2,2) + math.pow(y1-y2,2))
+    
+    # Heron's formula
+    a = dis(finger_xs[0],finger_ys[0],finger_xs[1],finger_ys[1])
+    b = dis(finger_xs[1],finger_ys[1],finger_xs[2],finger_ys[2])
+    c = dis(finger_xs[0],finger_ys[0],finger_xs[2],finger_ys[2])
+    s = (a+b+c)/2
+    alpha = math.sqrt(s*(s-a)*(s-b)*(s-c))
+    beta = abs(finger_ys[0]-finger_ys[1]) + abs(finger_ys[1]-finger_ys[2])
+    
+    global FIS,FIH
+    if(abs(FIS[0]-(FIS[0]*0.6+alpha*0.4)))>2: FIS[0] = (FIS[0]*0.6+alpha*0.4)
+    if(abs(FIS[1]-(FIS[1]*0.6+beta*0.4)))>2: FIS[1] = (FIS[1]*0.6+beta*0.4)
+    
+    put_num(frame, "FIS_0:", round(FIS[0]), 640-180, 20)
+    put_num(frame, "FIS_1:", round(FIS[1]), 640-180, 60)
+    if(datetime.now().timestamp() - last_moving < 0.5):
+        if(FIH == False and FIS[1] < 26): FIH = True
+        elif(FIH == True and FIS[1] >= 26): FIH = False
+    put_Boolean(frame, "L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
 # ====================================================================================================== 
 def hand_skeleton(frame, width, height):
     results = hands.process(frame)
@@ -221,8 +233,8 @@ def hand_skeleton(frame, width, height):
             right_click(hand_landmarks, frame)
             thumb_click(hand_landmarks, frame)
             move(hand_landmarks)
-            put_num(frame, "screen width:", w, round(640-180), round(90))
-            put_num(frame, "screen height:", h, round(640-180), round(120))
+            put_num(frame, "screen width:", camera_width, round(640-180), round(360-20))
+            put_num(frame, "screen height:", camera_height, round(640-180), round(360-60))
             put_num(frame, check_cmaera_from(frame, hand_landmarks),0, round(80), round(360-40))
             check_cmaera_from(frame, hand_landmarks)
     return frame
@@ -230,9 +242,9 @@ def hand_skeleton(frame, width, height):
 def check_cmaera_from(frame, hand_landmarks):
     wrist = hand_landmarks.landmark[0]
     middle_top = hand_landmarks.landmark[12]
-    put_num(frame, "x: ", middle_top.x*w - wrist.x*w, 640-180, 360-80)
-    put_num(frame, "y: ", middle_top.y*h - wrist.y*h, 640-180, 360-40)
-    if middle_top.y*h - wrist.y*h > 150:
+    put_num(frame, "x: ", middle_top.x*camera_width - wrist.x*camera_width, 640-180, 360-80)
+    put_num(frame, "y: ", middle_top.y*camera_height - wrist.y*camera_height, 640-180, 360-40)
+    if middle_top.y*camera_height - wrist.y*camera_height > 150:
         return "screen_right_top_camera"
     else:
         return "unknown"
@@ -249,6 +261,7 @@ def camera_cap():
         temp = ImageTk.PhotoImage(image=temp)
         panel.imgtk = temp
         panel.config(image=temp)
+        root.attributes('-topmost',True)
         root.after(1, camera_cap)
 
 def get_cam_list():
@@ -260,11 +273,11 @@ def get_cam_list():
         else:
             is_reading, img = camera.read()
             cv2.imshow(str(usb_port), img)
-            w = camera.get(3)
-            h = camera.get(4)
+            camera_width = camera.get(3)
+            camera_height = camera.get(4)
             if is_reading:
                 print("Port %s is working and reads images (%s x %s)" %
-                      (usb_port, h, w))
+                      (usb_port, camera_height, camera_width))
         usb_port += 1
         camera.release()
     return usb_port
@@ -279,7 +292,7 @@ if __name__ == '__main__':
     panel.pack(padx=10, pady=10)
     root.config(cursor="arrow")
 # ======================================================================================================camera sets
-    camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
     camera.set(cv2.CAP_PROP_FPS, 60)
@@ -297,7 +310,6 @@ if __name__ == '__main__':
     len_switch = Checkbutton(root,text="開啟濾鏡", font=('Arial', 16, 'bold'),variable = len_on, onvalue = True, offvalue = False)
     len_switch.deselect()
     len_switch.place(x=200, y=420, width=160, height=60)
-    
     
     len_mode = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,label="濾鏡編號")
     len_mode.set(0)
@@ -322,7 +334,8 @@ if __name__ == '__main__':
         min_tracking_confidence=0.3,
         model_complexity=0) as hands:
         camera_cap()
-        if win32api.GetAsyncKeyState(win32con.VK_ESCAPE):air_mouse_switch.deselect()
+        root.bind('<Control-m>', lambda e: air_mouse_switch.toggle())
+        root.bind('<Control-l>', lambda e: len_switch.toggle())
         root.mainloop()
 
     camera.release()
