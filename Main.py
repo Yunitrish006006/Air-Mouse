@@ -146,6 +146,8 @@ def thumb_click(data):
     thumb1_x = data.landmark[1].x * camera_height
     thumb4_x = data.landmark[4].x * camera_height
     FTH = abs(thumb1_x-thumb4_x) < 20
+    if FTH: win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+    else: win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 
 # ====================================================================================================== 吳季旻
 # middle_finger_press = False
@@ -197,12 +199,13 @@ def right_click(hand_landmarks):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
     
-    if(temp and FMH == False and FMS[1] < int(R_sensitive.get())):
-        FMH = True
-        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
-    elif(temp and FMH == True and FMS[1] >= int(R_sensitive.get())):
-        FMH = False
-        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
+    if not left_click_mode.get():
+        if(temp and FMH == False and FMS[1] < int(R_sensitive.get())):
+            FMH = True
+            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+        elif(temp and FMH == True and FMS[1] >= int(R_sensitive.get())):
+            FMH = False
+            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
       
 def left_click(hand_landmarks):
     global index_finger_press
@@ -227,10 +230,13 @@ def left_click(hand_landmarks):
     else: temp = True
     if(temp and FIH == False and FIS[1] < int(L_sensitive.get())):
         FIH = True
-        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+        global last_click
+        if not left_click_mode.get():
+            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
     elif(temp and FIH == True and FIS[1] >= int(L_sensitive.get())):
         FIH = False
-        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
+        if not left_click_mode.get():
+            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 # ====================================================================================================== 
 def hand_skeleton(frame):
     results = hands.process(frame)
@@ -273,10 +279,10 @@ def camera_cap():
                 put_num(frame,"HMS: ",int(HMS),640-180,360-120,(255*int(HMS<50),125,125))
                 put_Boolean(frame, "S: ", str(FTH), 2, color=(0, 255, 0))
                 
-                put_num(frame, "FMS: "+str(round(FMS[0]))+" , ",round(FMS[1]), 640-100, 20,(255,0,0))
+                put_num(frame, "FMS: "+str(round(FMS[0]))+" , ",round(FMS[1]), 640-140, 20,(255,0,0))
                 put_Boolean(frame, "["+str(int(R_sensitive.get()))+"] R: ", str(FMH), 4, color=(255, 255*int(FMH), 255*int(not FMH)))
                 
-                put_num(frame, "FIS: "+str(round(FIS[0]))+" , ", round(FIS[1]), 640-220, 20,(255,0,0))
+                put_num(frame, "FIS: "+str(round(FIS[0]))+" , ", round(FIS[1]), 640-260, 20,(255,0,0))
                 put_Boolean(frame, "["+str(int(L_sensitive.get()))+"] L: ", str(FIH), 3, color=(255, 255*int(FIH), 255*int(not FIH)))
                 
                 put_num(frame,"camera: "+str(int(camera_width))+" x ",int(camera_height),30,20,(255,0,0))
@@ -341,6 +347,14 @@ if __name__ == '__main__':
     data_display_switch = Checkbutton(root,text="開啟除錯", font=('Arial', 16, 'bold'),variable = data_display, onvalue = True, offvalue = False)
     data_display_switch.deselect()
     data_display_switch.place(x=200, y=460, width=160, height=60)
+    
+    #額外新增功能
+    left_click_mode = BooleanVar()
+    left_click_switch = Checkbutton(root,text="左鍵模式", font=('Arial', 16, 'bold'),variable = left_click_mode, onvalue = True, offvalue = False)
+    left_click_switch.deselect()
+    left_click_switch.place(x=200, y=500, width=160, height=60)
+    
+    
     
     len_mode = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,label="濾鏡編號")
     len_mode.set(0)
