@@ -31,6 +31,8 @@ S0963032 許家碩
     * 側鍵press(龔品宇)
     * 側鍵release(龔品宇)
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/OyCN04p-uS8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 > 參考連結 \
 
 <https://teachablemachine.withgoogle.com/train> \
