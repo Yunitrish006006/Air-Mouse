@@ -133,12 +133,11 @@ def move(hand_landmarks):
 
 def moveCursor(var, direct, x, y):  # call by move
     global last_moving
-    if(var[0] > 1 or var[1] > 1):
+    if(var[0] > 2 or var[1] > 2):
         x += var[0] * mouse_move.get() * direct[0] * 2
         y += var[1] * mouse_move.get() * direct[1] * 2
         win32api.SetCursorPos((round(x), round(y)))
-
-    if(var[0] > 5 or var[1] > 5):
+    if(var[0] > mouse_move.get() or var[1] > mouse_move.get()):
         last_moving = datetime.now().timestamp()
 # ====================================================================================================== 龔品宇
 def thumb_click(data):
@@ -173,10 +172,8 @@ def to_mid(hand_landmarks):
     delta = statistics.mean(deltas)
     global HMS
     if(abs(HMS-(HMS*0.6+delta*0.4)))>2: HMS = (HMS*0.6+delta*0.4)
-    global last_moving
-    if(HMS<50):
-        win32api.SetCursorPos((int(window_width/2),int(window_height/2)))
-
+    if(HMS<50): win32api.SetCursorPos((int(window_width/2),int(window_height/2)))
+            
 def right_click(hand_landmarks):
     global index_finger_press
     finger_xs = [hand_landmarks.landmark[i].x * camera_width for i in [10,11,12]]
@@ -205,6 +202,7 @@ def right_click(hand_landmarks):
             win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
         elif(temp and FMH == True and FMS[1] >= int(R_sensitive.get())):
             FMH = False
+            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
             win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
       
 def left_click(hand_landmarks):
@@ -237,13 +235,15 @@ def left_click(hand_landmarks):
             FIH = False
             win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
     else:
-        if FIH == False and FIS[1] < int(L_sensitive.get()):
+        if temp and FIS[1] < int(L_sensitive.get()):
             FIH = True
             win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
-        elif FIH == True and FIS[1] >= int(L_sensitive.get()):
-            FIH = False
-            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
             win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
+        # elif temp and FIS[1] >= int(L_sensitive.get()):
+        # else:
+        #     FIH = False
+        #     win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+        #     win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
 # ====================================================================================================== 
 def hand_skeleton(frame):
     results = hands.process(frame)
@@ -340,8 +340,12 @@ if __name__ == '__main__':
     len_button = Button(root,text="隨機濾鏡", command=lambda: len_mode.set(random.randint(0, len_counts)), font=('Arial', 16, 'bold'))
     len_button.place(x=30, y=400, width=160, height=60)
     
+    def on_mouse_on():
+        global FIH
+        FIH = False
+    
     air_mouse_on = BooleanVar()
-    air_mouse_switch = Checkbutton(root,text="開啟滑鼠", font=('Arial', 16, 'bold'),variable = air_mouse_on, onvalue = True, offvalue = False)
+    air_mouse_switch = Checkbutton(root,text="開啟滑鼠", font=('Arial', 16, 'bold'),variable = air_mouse_on, onvalue = True, offvalue = False, command= lambda: on_mouse_on())
     air_mouse_switch.deselect()
     air_mouse_switch.place(x=200, y=380, width=160, height=60)
     
