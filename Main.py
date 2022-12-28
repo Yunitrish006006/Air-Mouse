@@ -112,7 +112,7 @@ def put_Boolean(frame, key, value, line, color):
 # ====================================================================================================== 林煜宸、許家碩
 def move(hand_landmarks):
     # 許家碩
-    finger_tips = [hand_landmarks.landmark[i].x * camera_width for i in [4,8,12,16,20]]# 大拇指 ~ 小指
+    finger_tips = [hand_landmarks.landmark[i].x * camera_width for i in [0,5,9,13,17]]# 大拇指 ~ 小指
     finger_center[0] = statistics.mean(finger_tips)  # 計算平均數
     # 林煜宸
     finger_y = [hand_landmarks.landmark[i].y * camera_height for i in [0,1,13,17]]
