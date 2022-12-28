@@ -356,14 +356,19 @@ if __name__ == '__main__':
     
     data_display = BooleanVar()
     data_display_switch = Checkbutton(root,text="開啟除錯", font=('Arial', 16, 'bold'),variable = data_display, onvalue = True, offvalue = False)
-    data_display_switch.deselect()
+    data_display_switch.select()
     data_display_switch.place(x=200, y=460, width=160, height=60)
+    
+    keeptop = BooleanVar()
+    keeptop_switch = Checkbutton(root,text="視窗置頂", font=('Arial', 16, 'bold'),variable = keeptop, onvalue = True, offvalue = False)
+    keeptop_switch.select()
+    keeptop_switch.place(x=200, y=460, width=160, height=60)
     
     #額外新增功能
     gaming_mode = BooleanVar()
     gaming_switch = Checkbutton(root,text="遊戲模式", font=('Arial', 16, 'bold'),variable = gaming_mode, onvalue = True, offvalue = False)
     gaming_switch.deselect()
-    gaming_switch.place(x=200, y=500, width=160, height=60)
+    gaming_switch.place(x=200, y=540, width=160, height=60)
     
     
     
