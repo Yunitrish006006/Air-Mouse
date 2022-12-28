@@ -240,10 +240,10 @@ def left_click(hand_landmarks):
             win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
             win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
         # elif temp and FIS[1] >= int(L_sensitive.get()):
-        # else:
+        else:
         #     FIH = False
         #     win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
-        #     win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
+            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
 # ====================================================================================================== 
 def hand_skeleton(frame):
     results = hands.process(frame)
@@ -298,7 +298,6 @@ def camera_cap():
         temp = ImageTk.PhotoImage(image=temp)
         panel.imgtk = temp
         panel.config(image=temp)
-        root.attributes('-topmost',True)
         root.after(1, camera_cap)
 
 def get_cam_list():
@@ -360,17 +359,15 @@ if __name__ == '__main__':
     data_display_switch.place(x=200, y=460, width=160, height=60)
     
     keeptop = BooleanVar()
-    keeptop_switch = Checkbutton(root,text="視窗置頂", font=('Arial', 16, 'bold'),variable = keeptop, onvalue = True, offvalue = False)
+    keeptop_switch = Checkbutton(root,text="視窗置頂", font=('Arial', 16, 'bold'),variable = keeptop, onvalue = True, offvalue = False,command=lambda:root.attributes('-topmost',keeptop.get()))
     keeptop_switch.select()
-    keeptop_switch.place(x=200, y=460, width=160, height=60)
+    keeptop_switch.place(x=200, y=500, width=160, height=60)
     
     #額外新增功能
     gaming_mode = BooleanVar()
     gaming_switch = Checkbutton(root,text="遊戲模式", font=('Arial', 16, 'bold'),variable = gaming_mode, onvalue = True, offvalue = False)
     gaming_switch.deselect()
     gaming_switch.place(x=200, y=540, width=160, height=60)
-    
-    
     
     len_mode = Scale(root, from_=0, to=len_counts,orient=HORIZONTAL,label="濾鏡編號")
     len_mode.set(0)
