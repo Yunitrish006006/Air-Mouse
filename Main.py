@@ -199,7 +199,7 @@ def right_click(hand_landmarks):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
     
-    if not left_click_mode.get():
+    if not gaming_mode.get():
         if(temp and FMH == False and FMS[1] < int(R_sensitive.get())):
             FMH = True
             win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
@@ -228,15 +228,22 @@ def left_click(hand_landmarks):
     if(50-int(L_sensitive.get()) < 5 ):
         temp = datetime.now().timestamp() - last_moving < hold_time.get()/10
     else: temp = True
-    if(temp and FIH == False and FIS[1] < int(L_sensitive.get())):
-        FIH = True
-        global last_click
-        if not left_click_mode.get():
+    if not gaming_mode.get():
+        if(temp and FIH == False and FIS[1] < int(L_sensitive.get())):
+            FIH = True
             win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
-    elif(temp and FIH == True and FIS[1] >= int(L_sensitive.get())):
-        FIH = False
-        if not left_click_mode.get():
+                
+        elif(temp and FIH == True and FIS[1] >= int(L_sensitive.get())):
+            FIH = False
             win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
+    else:
+        if FIH == False and FIS[1] < int(L_sensitive.get()):
+            FIH = True
+            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+        elif FIH == True and FIS[1] >= int(L_sensitive.get()):
+            FIH = False
+            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+            win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
 # ====================================================================================================== 
 def hand_skeleton(frame):
     results = hands.process(frame)
@@ -349,10 +356,10 @@ if __name__ == '__main__':
     data_display_switch.place(x=200, y=460, width=160, height=60)
     
     #額外新增功能
-    left_click_mode = BooleanVar()
-    left_click_switch = Checkbutton(root,text="左鍵模式", font=('Arial', 16, 'bold'),variable = left_click_mode, onvalue = True, offvalue = False)
-    left_click_switch.deselect()
-    left_click_switch.place(x=200, y=500, width=160, height=60)
+    gaming_mode = BooleanVar()
+    gaming_switch = Checkbutton(root,text="遊戲模式", font=('Arial', 16, 'bold'),variable = gaming_mode, onvalue = True, offvalue = False)
+    gaming_switch.deselect()
+    gaming_switch.place(x=200, y=500, width=160, height=60)
     
     
     
