@@ -165,10 +165,10 @@ class App(ctk.CTk):
         option = ["NoLen","noise","black","white","sobel","lines","revert","blur","GrayScale","revert_sobel"]
         def lenChange(choice): self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
-        self.cam_list.grid(row=4, column=0,sticky="s")
+        self.cam_list.grid(row=4, column=0, pady=10,sticky="s")
         
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=getDeviceList(),command=print("this function is not available"))
-        self.cam_list.grid(row=5, column=0,sticky="s")
+        self.cam_list.grid(row=5, column=0, pady=10,sticky="s")
 
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navigation_frame, values=["System","Light", "Dark"],command=self.change_appearance_mode_event)
         self.appearance_mode_menu.grid(row=6, column=0, padx=20, pady=10, sticky="s")
