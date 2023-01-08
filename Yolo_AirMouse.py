@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from email.mime import image
 from tkinter import *
 from turtle import update
@@ -7,9 +8,32 @@ import math
 import customtkinter as ctk
 import os
 from PIL import Image
-# import win32com.client
+import win32api
+import win32con
+from datetime import datetime
+import win32com.client
 
-
+class AppControl():
+    data = None
+    stablizor:list[int]=[]
+    stamp:list[float]=[]
+    gap:list[int]=[]
+    def __init__(self,frame:Image) -> None:
+        global data
+        data = frame
+    def get_timegap(time:float=datetime.now().timestamp()) -> float:
+        return datetime.now().timestamp()-time
+        
+    def run(self) -> None:
+        print(self.get_timegap())
+    
+    def getAction1(self,data,id:int=len(gap)):
+        if(self.get_timegap(self.stamp[id])>self.gap[id]):
+            data = data#do something
+            win32api.SetCursorPos((round(960), round(540)))
+            self.gap[id] = self.get_timegap(self.stamp[id])
+            
+    
 class App(ctk.CTk):
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
@@ -113,19 +137,12 @@ class App(ctk.CTk):
                 fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                 image=getIcon(icon,32,32), anchor="w", command=lambda:self.select_frame_by_name(name))
         
-        # def getDeviceList() -> list[str]:
-        #     deviceList:list[str]=["select your camera"]
-        #     wmi = win32com.client.GetObject ("winmgmts:")
-        #     for usb in wmi.InstancesOf ("Win32_USBHub"):
-        #         deviceList.append(str(usb.DeviceID))
-        #     return deviceList
-        def count_camera() -> int:
-            count = 0
-            for i in range(10):
-                cap = cv2.VideoCapture(i)
-                if not cap.isOpened(): break
-                else: count+=1
-            return count
+        def getDeviceList() -> list[str]:
+            deviceList:list[str]=["select your camera"]
+            wmi = win32com.client.GetObject ("winmgmts:")
+            for usb in wmi.InstancesOf ("Win32_USBHub"):
+                deviceList.append(str(usb.DeviceID))
+            return deviceList
         # 模式選擇面板
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
@@ -144,10 +161,10 @@ class App(ctk.CTk):
         def lenChange(choice):
             self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
-        self.cam_list.grid(row=5, column=0,sticky="s")
+        self.cam_list.grid(row=4, column=0,sticky="s")
         
-        # self.cam_list = ctk.CTkComboBox(self.navigation_frame,width=160,values=["device: "+str(i) for i in range(count_camera())])
-        # self.cam_list.grid(row=5, column=0,sticky="s")
+        self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=getDeviceList(),command=print("this function is not available"))
+        self.cam_list.grid(row=5, column=0,sticky="s")
 
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navigation_frame, values=["System","Light", "Dark"],command=self.change_appearance_mode_event)
         self.appearance_mode_menu.grid(row=6, column=0, padx=20, pady=10, sticky="s")
@@ -176,6 +193,6 @@ if __name__ == "__main__":
     app = App()
     def task() -> None:
         camera.configure(dark_image=camera_update())
-        app.after(1, task)
+        app.after(20, task)
     app.after(1,task())
     app.mainloop()

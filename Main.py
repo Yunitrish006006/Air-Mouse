@@ -3,8 +3,6 @@ from PIL import Image, ImageTk
 import cv2
 import numpy as np
 import math
-import keyboard
-import pydirectinput
 import pyautogui
 import random
 import mediapipe as mp
