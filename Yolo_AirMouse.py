@@ -156,22 +156,28 @@ class App(ctk.CTk):
         self.game_mode_button = getNavItems("game","nv.png")
         self.game_mode_button.grid(row=2, column=0, sticky="ew")
         
-        global switch
-        switch = ctk.StringVar(value="off")
-        self.switch = ctk.CTkSwitch(self.navigation_frame,text="開啟/關閉 滑鼠",variable=switch,onvalue="on",offvalue="off")
-        self.switch.grid(row=3, column=0,sticky="s")
-        self.switch.deselect()
+        global mouse_state
+        mouse_state = ctk.StringVar(value="off")
+        self.mouse = ctk.CTkSwitch(self.navigation_frame,text="滑鼠功能",variable=mouse_state,onvalue="on",offvalue="off")
+        self.mouse.grid(row=4, column=0, pady=10,sticky="s")
+        self.mouse.deselect()
+        
+        global debug_switch_state
+        debug_switch_state = ctk.StringVar(value="off")
+        self.debug_switch = ctk.CTkSwitch(self.navigation_frame,text="除錯功能",variable=debug_switch_state,onvalue="on",offvalue="off")
+        self.debug_switch.grid(row=5, column=0, pady=10,sticky="s")
+        self.debug_switch.deselect()
         
         option = ["NoLen","noise","black","white","sobel","lines","revert","blur","GrayScale","revert_sobel"]
-        def lenChange(choice): self.LenMode = choice
+        def lenChange(choice) -> None: self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
-        self.cam_list.grid(row=4, column=0, pady=10,sticky="s")
+        self.cam_list.grid(row=6, column=0, pady=10,sticky="s")
         
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=getDeviceList(),command=print("this function is not available"))
-        self.cam_list.grid(row=5, column=0, pady=10,sticky="s")
+        self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
 
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navigation_frame, values=["System","Light", "Dark"],command=self.change_appearance_mode_event)
-        self.appearance_mode_menu.grid(row=6, column=0, padx=20, pady=10, sticky="s")
+        self.appearance_mode_menu.grid(row=8, column=0, padx=20, pady=10, sticky="s")
         
         # mutual components
         global camera
