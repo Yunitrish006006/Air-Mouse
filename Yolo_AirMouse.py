@@ -58,7 +58,7 @@ class App(ctk.CTk):
         super().__init__()
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "src\\image")
         self.iconbitmap(os.path.join(image_path, "rat.ico"))
-        self.title("\tAir Mouse")
+        self.title("   Air Mouse")
         self.geometry("960x640")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -137,7 +137,7 @@ class App(ctk.CTk):
                 image=getIcon(icon,32,32), anchor="w", command=lambda:self.select_frame_by_name(name))
         
         def getDeviceList() -> list[str]:
-            deviceList:list[str]=["select your camera"]
+            deviceList:list[str]=["default camera"]
             wmi = win32com.client.GetObject ("winmgmts:")
             for usb in wmi.InstancesOf ("Win32_USBHub"):
                 deviceList.append(str(usb.DeviceID))
@@ -147,7 +147,7 @@ class App(ctk.CTk):
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(4, weight=1)
 
-        self.navigation_frame_label = ctk.CTkLabel(self.navigation_frame, text="Air Mouse", image=getIcon("rat.png",26,26),compound="left", font=ctk.CTkFont(size=15, weight="bold"))
+        self.navigation_frame_label = ctk.CTkLabel(self.navigation_frame, text="   Air Mouse", image=getIcon("rat.png",26,26),compound="left", font=ctk.CTkFont(size=15, weight="bold"))
         self.navigation_frame_label.grid(row=0, column=0, padx=20, pady=20)
 
         self.normal_mode_button = getNavItems("normal","pc.png")
@@ -168,12 +168,12 @@ class App(ctk.CTk):
         self.debug_switch.grid(row=5, column=0, pady=10,sticky="s")
         self.debug_switch.deselect()
         
-        option = ["NoLen","noise","black","white","sobel","lines","revert","blur","GrayScale","revert_sobel"]
+        option = ["NoLen","sobel","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
         def lenChange(choice) -> None: self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
         self.cam_list.grid(row=6, column=0, pady=10,sticky="s")
         
-        self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=getDeviceList(),command=print("this function is not available"))
+        self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=getDeviceList(),command=lambda x:print("you have selected " + str(x) +" as camera"))
         self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
 
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navigation_frame, values=["System","Light", "Dark"],command=self.change_appearance_mode_event)
