@@ -38,7 +38,6 @@ class App(ctk.CTk):
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
         self.game_mode_button.configure(fg_color=("gray75", "gray25") if name == "game" else "transparent")
-        
         self.normal_mode_ui.grid_forget()
         self.game_window.grid_forget()
         if name == "normal":
@@ -143,7 +142,7 @@ class App(ctk.CTk):
             for usb in wmi.InstancesOf ("Win32_USBHub"):
                 deviceList.append(str(usb.DeviceID))
             return deviceList
-        # 模式選擇面板
+        # 側邊攔
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(4, weight=1)
@@ -157,9 +156,14 @@ class App(ctk.CTk):
         self.game_mode_button = getNavItems("game","nv.png")
         self.game_mode_button.grid(row=2, column=0, sticky="ew")
         
+        global switch
+        switch = ctk.StringVar(value="off")
+        self.switch = ctk.CTkSwitch(self.navigation_frame,text="開啟/關閉 滑鼠",variable=switch,onvalue="on",offvalue="off")
+        self.switch.grid(row=3, column=0,sticky="s")
+        self.switch.deselect()
+        
         option = ["NoLen","noise","black","white","sobel","lines","revert","blur","GrayScale","revert_sobel"]
-        def lenChange(choice):
-            self.LenMode = choice
+        def lenChange(choice): self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
         self.cam_list.grid(row=4, column=0,sticky="s")
         
