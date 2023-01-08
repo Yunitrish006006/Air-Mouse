@@ -95,7 +95,7 @@ def lens(frame, option):
         5:sobel_img(frame),
         6:line_img(frame),
         7:abs(255-canny(frame)),
-        8:abs(sobel_img(frame) + 255),
+        8:abs(sobel_img(frame) + 255),#x
         9:cv2.addWeighted(abs(sobel_img(frame) + 30),0.7,frame,1,0),
         10:gray_scale(frame),
         11:cv2.addWeighted(sobel_img(255-frame),0.7,frame,1,0)
