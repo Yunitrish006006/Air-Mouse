@@ -32,7 +32,6 @@ class AppControl():
             data = data #do something
             win32api.SetCursorPos((round(960), round(540)))
             self.gap[id] = self.get_timegap(self.stamp[id])
-            
     
 class App(ctk.CTk):
     def select_frame_by_name(self, name) -> None:
@@ -73,6 +72,7 @@ class App(ctk.CTk):
             ret, frame = self.camera.read()
             frame = cv2.flip(frame, 1)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.flip(frame,0)
             print(self.detect_hand(frame))
             if(ret):
                 def linearization(frame):
@@ -109,6 +109,7 @@ class App(ctk.CTk):
                         frame = cv2.addWeighted(x, 0.5, y, 0.5, 0.3)
                         return frame
                 if(self.LenMode == "Nolen"): pass
+                elif(self.LenMode == "enhance"):pass
                 elif(self.LenMode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
                 elif(self.LenMode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
                 elif(self.LenMode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
