@@ -1,5 +1,6 @@
 import array
 from multiprocessing.dummy import Array
+from pickletools import uint8
 from turtle import color
 import cv2
 import numpy as np
@@ -16,27 +17,6 @@ import win32com.client
 import torch
 import pandas
 
-from Main import gray_scale
-
-class AppControl():
-    data = None
-    stablizor:List[int]=[]
-    stamp:List[float]=[]
-    gap:List[int]=[]
-    def __init__(self,frame:Image) -> None:
-        global data
-        data = frame
-    def get_timegap(time:float=datetime.now().timestamp()) -> float:
-        return datetime.now().timestamp()-time
-        
-    def run(self) -> None:
-        print(self.get_timegap())
-    
-    def getAction1(self,data,id:int=len(gap)):
-        if(self.get_timegap(self.stamp[id])>self.gap[id]):
-            data = data #do something
-            win32api.SetCursorPos((round(960), round(540)))
-            self.gap[id] = self.get_timegap(self.stamp[id])
 class App(ctk.CTk):
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
@@ -51,7 +31,16 @@ class App(ctk.CTk):
             self.game_window.grid(row=0, column=1, sticky="nsew")
         elif name == "camera":
             self.camera_window.grid(row=0, column=1, sticky="nsew")
-
+    stablizor:List[int]=[]
+    stamp:List[float]=[]
+    gap:List[int]=[]
+    def get_timegap(time:float=datetime.now().timestamp()) -> float:
+        return datetime.now().timestamp()-time
+    def getAction1(self,data,id:int=len(gap)):
+        if(self.get_timegap(self.stamp[id])>self.gap[id]):
+            data = data #do something
+            win32api.SetCursorPos((round(960), round(540)))
+            self.gap[id] = self.get_timegap(self.stamp[id])
     def change_appearance_mode_event(self, new_appearance_mode) -> None:
         ctk.set_appearance_mode(new_appearance_mode)
         
@@ -60,10 +49,36 @@ class App(ctk.CTk):
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
     getYolo = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
     LenMode="NoLen"
+    windos_data:List[int]=[1920,1080]
+    def getWinInfo(self):
+        self.windos_data[0] = self.winfo_screenwidth()
+        self.windos_data[1] = self.winfo_screenheight()
+    handPosition:list[int]=[30,30]
     
-    px = 30
-    py = 30
-    
+    #=============================================控制===============================================
+    ALT=18
+    L_ARROW=38
+    R_ARROW=39
+    def PressR(self):
+        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+    def ReleaseR(self):
+        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
+    def PressL(self):
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+    def ReleaseL(self):
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
+    def ToMid(self):
+        win32api.SetCursorPos(int(self.windos_data[0]/2),int(self.windos_data[1]/2))
+    def NextPage(self):
+        win32api.keybd_event(self.ALT)
+        win32api.keybd_event(self.R_ARROW)
+        win32api.keybd_event(self.R_ARROW)
+        win32api.keybd_event(self.ALT)
+    def NextPage(self):
+        win32api.keybd_event(self.ALT)
+        win32api.keybd_event(self.L_ARROW)
+        win32api.keybd_event(self.L_ARROW)
+        win32api.keybd_event(self.ALT)
     def detect_hand(self,frame):
         result = self.getYolo(frame)
         result.xyxy[0]
@@ -123,21 +138,21 @@ class App(ctk.CTk):
                     frame = cv2.dilate(frame,kernal,iterations=2)
                     frame = cv2.erode(frame,kernal,iterations=2)
                 return frame
-            def DE(frame):
-                kernal = np.ones((2,2),np.uint8)
-                for _ in range(0,30):
-                    frame = cv2.erode(frame,kernal,iterations=2)
-                    frame = cv2.dilate(frame,kernal,iterations=2)
+            def DE(frame:np.dtype):
+                kernal = np.array([[0,1,1,1,0],[1,1,0,1,1],[1,0,0,0,1],[1,1,0,1,1],[0,1,1,1,0]],dtype=np.uint8)
+                for _ in range(0,3):
+                    frame = cv2.dilate(frame,kernal,iterations=3)
+                    frame = cv2.erode(frame,kernal,iterations=3)
                 return frame
             if(mode == "Nolen"): pass
             elif(mode == "DE"): frame = DE(frame)
             elif(mode == "enhance"): frame = enhancialize(frame)
-            elif(mode == "enhance_gray"): frame = gray_scale(enhancialize(frame))
+            elif(mode == "enhance_gray"): frame = grayscalize(enhancialize(frame))
             elif(mode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
             elif(mode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
             elif(mode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
             elif(mode == "sobel"): frame = sobelize(frame)
-            elif(mode == "sobel_gray"): frame = gray_scale(sobelize(frame))
+            elif(mode == "sobel_gray"): frame = grayscalize(sobelize(frame))
             elif(mode == "lines"): frame = linearization(frame)
             elif(mode == "revert"): frame = abs(255-frame)
             elif(mode == "blur"): frame = cv2.addWeighted(abs(sobelize(frame) + 30),0.7,frame,1,0)
@@ -154,12 +169,12 @@ class App(ctk.CTk):
                 value:List[str]=self.detect_hand(frame)
                 if debug_switch_state.get():
                     if(len(value,self.LenMode)>0):
-                        self.px = int((float(value[0][0])/2+float(value[0][2]))/2)
-                        self.py = int((float(value[0][1])/2+float(value[0][3]))/2)
-                        self.put_text(frame,str(value[0][6]),self.px,self.py,(255,0,0))
+                        self.handPosition[0] = int((float(value[0][0])/2+float(value[0][2]))/2)
+                        self.handPosition[1] = int((float(value[0][1])/2+float(value[0][3]))/2)
+                        self.put_text(frame,str(value[0][6]),self.handPosition[0],self.handPosition[1],(255,0,0))
                     else:
-                        print(self.px,self.py)
-                        self.put_text(frame,"empty",self.px,self.py,(255,0,0))
+                        print(self.handPosition[0],self.handPosition[1])
+                        self.put_text(frame,"empty",self.handPosition[0],self.handPosition[1],(255,0,0))
             return Image.fromarray(len(frame,self.LenMode))
         def getIcon(name,width,height) -> ctk.CTkImage:
             return ctk.CTkImage(
