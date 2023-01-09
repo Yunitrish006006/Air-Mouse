@@ -1,7 +1,12 @@
 import torch
 import cv2
-
 model = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
+
+def detect_hand():
+    img = camera.read()[1]
+    result = model(img)
+    result.xyxy[0]
+    return result.pandas().xyxy[0]
 
 # img = "data/project/val/images/img1.jpg"
 camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
@@ -15,7 +20,6 @@ if not camera.isOpened():
 while True:
     ret, img = camera.read()
     result = model(img)
-    result.print()
-    if cv2.waitKey(5) == ord('q'):
-        break    # 按下 q 鍵停止
-camera.release()
+    result.xyxy[0]
+    print(result.pandas().xyxy[0])
+
