@@ -1,3 +1,6 @@
+import array
+from multiprocessing.dummy import Array
+from turtle import color
 import cv2
 import numpy as np
 import math
@@ -32,17 +35,20 @@ class AppControl():
             data = data #do something
             win32api.SetCursorPos((round(960), round(540)))
             self.gap[id] = self.get_timegap(self.stamp[id])
-    
 class App(ctk.CTk):
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
         self.game_mode_button.configure(fg_color=("gray75", "gray25") if name == "game" else "transparent")
+        self.camera_mode_button.configure(fg_color=("gray75", "gray25") if name == "camera" else "transparent")
         self.normal_mode_ui.grid_forget()
         self.game_window.grid_forget()
+        self.camera_window.grid_forget()
         if name == "normal":
             self.normal_mode_ui.grid(row=0, column=1, sticky="nsew")
         elif name == "game":
             self.game_window.grid(row=0, column=1, sticky="nsew")
+        elif name == "camera":
+            self.camera_window.grid(row=0, column=1, sticky="nsew")
 
     def change_appearance_mode_event(self, new_appearance_mode) -> None:
         ctk.set_appearance_mode(new_appearance_mode)
@@ -53,10 +59,16 @@ class App(ctk.CTk):
     getYolo = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
     LenMode="NoLen"
     
+    px = 30
+    py = 30
+    
     def detect_hand(self,frame):
         result = self.getYolo(frame)
         result.xyxy[0]
         return result.pandas().xyxy[0].to_numpy()
+    
+    def put_text(self,frame,val:str,x,y,color):
+        cv2.putText(img=frame, text=val,org=(x,y), fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, color=color, thickness=2, lineType=cv2.LINE_AA)
     
     def __init__(self) -> None:
         super().__init__()
@@ -73,9 +85,17 @@ class App(ctk.CTk):
             frame = cv2.flip(frame, 1)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.flip(frame,0)
-            if(mouse_state.get()=="on"):
-                print(self.detect_hand(frame))
-            if(ret):
+            if mouse_state.get()=="on":
+                value:List[str]=self.detect_hand(frame)
+                if debug_switch_state.get():
+                    if(len(value)>0):
+                        self.px = int((float(value[0][0])/2+float(value[0][2]))/2)
+                        self.py = int((float(value[0][1])/2+float(value[0][3]))/2)
+                        self.put_text(frame,str(value[0][6]),self.px,self.py,(255,0,0))
+                    else:
+                        print(self.px,self.py)
+                        self.put_text(frame,"empty",self.px,self.py,(255,0,0))
+            if ret:
                 def linearization(frame):
                         dst = cv2.Canny(frame, 50, 200, None, 3)
                         cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
@@ -154,28 +174,31 @@ class App(ctk.CTk):
         self.game_mode_button = getNavItems("game","nv.png")
         self.game_mode_button.grid(row=2, column=0, sticky="ew")
         
+        self.camera_mode_button = getNavItems("camera","nv.png")
+        self.camera_mode_button.grid(row=3, column=0, sticky="ew")
+        
         global mouse_state
         mouse_state = ctk.StringVar(value="off")
         self.mouse = ctk.CTkSwitch(self.navigation_frame,text="滑鼠功能",variable=mouse_state,onvalue="on",offvalue="off")
-        self.mouse.grid(row=4, column=0, pady=10,sticky="s")
+        self.mouse.grid(row=5, column=0, pady=10,sticky="s")
         self.mouse.deselect()
         
         global debug_switch_state
         debug_switch_state = ctk.StringVar(value="off")
         self.debug_switch = ctk.CTkSwitch(self.navigation_frame,text="除錯功能",variable=debug_switch_state,onvalue="on",offvalue="off")
-        self.debug_switch.grid(row=5, column=0, pady=10,sticky="s")
+        self.debug_switch.grid(row=6, column=0, pady=10,sticky="s")
         self.debug_switch.deselect()
         
         option = ["NoLen","enhance","sobel","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
         def lenChange(choice) -> None: self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
-        self.cam_list.grid(row=6, column=0, pady=10,sticky="s")
+        self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
         
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=getDeviceList(),command=lambda x:print("you have selected " + str(x) +" as camera"))
-        self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
+        self.cam_list.grid(row=8, column=0, pady=10,sticky="s")
 
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navigation_frame, values=["System","Light", "Dark"],command=self.change_appearance_mode_event)
-        self.appearance_mode_menu.grid(row=8, column=0, padx=20, pady=10, sticky="s")
+        self.appearance_mode_menu.grid(row=9, column=0, padx=20, pady=10, sticky="s")
         
         # mutual components
         global camera
@@ -194,6 +217,19 @@ class App(ctk.CTk):
         self.game_window.grid_columnconfigure(0, weight=1)
         self.game_camera = ctk.CTkLabel(self.game_window,text="",image=camera)
         self.game_camera.grid(row=0, column=0, padx=20, pady=10)
+        
+        #camera mode
+        self.camera_window = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self.camera_window.grid_columnconfigure(0, weight=1)
+        self.camera_camera = ctk.CTkLabel(self.camera_window,text="",image=camera)
+        self.camera_camera.grid(row=0, column=0, padx=20, pady=10)
+        self.x = 0
+        def snap():
+            camera_update().save("Test/"+str(self.x)+".png")
+            self.x+=1
+        self.cheese_button = ctk.CTkButton(self.camera_window, text="cheese", compound="left",command=snap)
+        self.cheese_button.grid(row=2, column=0, padx=20, pady=10)
+        
         
         self.select_frame_by_name("normal")
 
