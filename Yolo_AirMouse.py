@@ -124,8 +124,8 @@ class App(ctk.CTk):
                     frame = cv2.erode(frame,kernal,iterations=2)
                 return frame
             def DE(frame):
-                kernal = np.ones((3,3),np.uint8)
-                for _ in range(0,3):
+                kernal = np.ones((2,2),np.uint8)
+                for _ in range(0,30):
                     frame = cv2.erode(frame,kernal,iterations=2)
                     frame = cv2.dilate(frame,kernal,iterations=2)
                 return frame
@@ -144,8 +144,7 @@ class App(ctk.CTk):
             elif(mode == "GrayScale"): frame = grayscalize(frame)
             elif(mode == "revert_sobel"): frame = cv2.addWeighted(sobelize(255-frame),0.7,frame,1,0)
             else:pass
-            return frame
-            
+            return frame            
         def camera_update() -> Image:
             _, frame = self.camera.read()
             frame = cv2.flip(frame, 1)
