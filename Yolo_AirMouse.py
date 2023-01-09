@@ -121,10 +121,10 @@ class App(ctk.CTk):
     def SCREENSHOT(self):
         global lastshot
 
-        if self.mode=='camera' and datetime.now().timestamp()-self.lastshot>5:
+        if self.mode=='camera' and datetime.now().timestamp()-self.lastshot>500:
 
             camera_update().save("Test/"+str(self.x)+".png")
-            print("succus shot")
+            print(str(datetime.now().timestamp()-self.lastshot))
             self.x+=1
             self.lastshot = datetime.now().timestamp()
         self.lst = [-1 for _ in range(20)]
