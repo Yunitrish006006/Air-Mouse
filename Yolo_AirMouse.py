@@ -141,7 +141,6 @@ class App(ctk.CTk):
                 if(self.LenMode == "Nolen"): pass
                 elif(self.LenMode == "enhance"): frame = enhancialize(frame)
                 elif(self.LenMode == "enhance_gray"): frame = gray_scale(enhancialize(frame))
-                elif(self.LenMode == "gray_enhance"): frame = enhancialize(gray_scale(frame))
                 elif(self.LenMode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
                 elif(self.LenMode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
                 elif(self.LenMode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
@@ -200,7 +199,7 @@ class App(ctk.CTk):
         self.debug_switch.grid(row=6, column=0, pady=10,sticky="s")
         self.debug_switch.deselect()
         
-        option = ["NoLen","enhance","gray_enhance","enhance_gray","sobel","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
+        option = ["NoLen","enhance","enhance_gray","sobel","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
         def lenChange(choice) -> None: self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
         self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
