@@ -184,7 +184,7 @@ class App(ctk.CTk):
         self.game_mode_button = getNavItems("game","nv.png")
         self.game_mode_button.grid(row=2, column=0, sticky="ew")
         
-        self.camera_mode_button = getNavItems("camera","nv.png")
+        self.camera_mode_button = getNavItems("camera","camera.png")
         self.camera_mode_button.grid(row=3, column=0, sticky="ew")
         
         global mouse_state
