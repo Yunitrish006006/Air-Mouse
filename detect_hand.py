@@ -8,7 +8,6 @@ def detect_hand():
     result.xyxy[0]
     return result.pandas().xyxy[0]
 
-# img = "data/project/val/images/img1.jpg"
 camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
