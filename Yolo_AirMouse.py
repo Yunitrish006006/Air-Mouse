@@ -153,7 +153,7 @@ class App(ctk.CTk):
             if mouse_state.get()=="on":
                 value:List[str]=self.detect_hand(frame)
                 if debug_switch_state.get():
-                    if(len(value)>0):
+                    if(len(value,self.LenMode)>0):
                         self.px = int((float(value[0][0])/2+float(value[0][2]))/2)
                         self.py = int((float(value[0][1])/2+float(value[0][3]))/2)
                         self.put_text(frame,str(value[0][6]),self.px,self.py,(255,0,0))
