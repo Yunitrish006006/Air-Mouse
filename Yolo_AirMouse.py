@@ -57,7 +57,7 @@ class App(ctk.CTk):
     def detect_hand(self,frame):
         result = self.getYolo(frame)
         result.xyxy[0]
-        return result.pandas().xyxy[0]
+        return result.pandas().xyxy[0].to_numpy()
     
     def __init__(self) -> None:
         super().__init__()
