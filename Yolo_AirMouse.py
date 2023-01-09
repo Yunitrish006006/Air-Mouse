@@ -47,7 +47,7 @@ class App(ctk.CTk):
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
-    getYolo = torch.hub.load('ultralytics/yolov5','custom',path="src/mode/the_best.pt")
+    getYolo = torch.hub.load('ultralytics/yolov5','custom',path="src/model/the_best.pt")
     FilterMode="NoLen"
     windos_data:List[int]=[1920,1080]
     def getWinInfo(self):
@@ -67,8 +67,10 @@ class App(ctk.CTk):
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
     def ReleaseL(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
+    def SetPosition(self,x:int,y:int):
+        win32api.SetCursorPos((x,y))
     def ToMid(self):
-        win32api.SetCursorPos(int(self.windos_data[0]/2),int(self.windos_data[1]/2))
+        win32api.SetCursorPos((int(self.windos_data[0]/2),int(self.windos_data[1]/2)))
     def NextPage(self):
         win32api.keybd_event(self.ALT)
         win32api.keybd_event(self.R_ARROW)
@@ -83,6 +85,7 @@ class App(ctk.CTk):
         result = self.getYolo(frame)
         result.xyxy[0]
         return result.pandas().xyxy[0].to_numpy()
+    #===========================================debug=================================================
     def put_text(self,frame,val:str,x,y,color):
         cv2.putText(img=frame, text=val,org=(x,y), fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, color=color, thickness=2, lineType=cv2.LINE_AA)
     
@@ -168,8 +171,9 @@ class App(ctk.CTk):
                 value:List[str]=self.detect_hand(frame)
                 if debug_switch_state.get():
                     if(len(value)>0):
-                        self.handPosition[0] = int((float(value[0][0])/2+float(value[0][2]))/2)
-                        self.handPosition[1] = int((float(value[0][1])/2+float(value[0][3]))/2)
+                        self.handPosition[0] = int(((float(value[0][0])+float(value[0][2]))/2)*self.g_mouseX_sensitive.get())
+                        self.handPosition[1] = int(((float(value[0][1])+float(value[0][3]))/2)*self.g_mouseY_sensitive.get())
+                        self.SetPosition(self.handPosition[0],self.handPosition[1])
                         self.put_text(frame,str(str(self.handPosition[0])+str(self.handPosition[1])),30,30,(255,0,0))
                         self.put_text(frame,str(value[0][6]),self.handPosition[0],self.handPosition[1],(255,0,0))
                     else:
