@@ -238,6 +238,7 @@ class App(ctk.CTk):
                             self.SCREENSHOT()
                         elif value[0][6] == "home":
                             self.HOME()
+                            
                         self.put_text(frame,str(str(self.handPosition[0])+str(self.handPosition[1])),30,30,(255,0,0))
                         self.put_text(frame,str(value[0][6]),self.handPosition[0],self.handPosition[1],(255,0,0))
                     else:
