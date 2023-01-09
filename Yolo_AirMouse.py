@@ -74,6 +74,7 @@ class App(ctk.CTk):
     DOWN=34
     WINDOWS=91
     D=68
+    lastshot=datetime.now().timestamp()
     def PressR(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
@@ -118,9 +119,16 @@ class App(ctk.CTk):
         win32api.keybd_event(self.DOWN,0,win32con.KEYEVENTF_KEYUP,0)
         self.lst = [-1 for _ in range(20)]
     def SCREENSHOT(self):
-        if self.mode=='camera':
+        global lastshot
+
+        if self.mode=='camera' and datetime.now().timestamp()-self.lastshot>5:
+
             camera_update().save("Test/"+str(self.x)+".png")
+            print("succus shot")
             self.x+=1
+            self.lastshot = datetime.now().timestamp()
+        self.lst = [-1 for _ in range(20)]
+        
         # win32api.keybd_event(self.SCSHOT,0,0,0)
         # time.sleep(1)
         # win32api.keybd_event(self.SCSHOT,0,win32con.KEYEVENTF_KEYUP,0)
@@ -264,7 +272,6 @@ class App(ctk.CTk):
                         #     self.SCREENSHOT()
                         # elif value[0][6] == "home":
                         #     self.HOME()
-                        print(temp)
                         self.put_text(frame,str(temp),30,60,(255,0,0))
                         if temp == -1:
                             win32api.keybd_event(0,0,win32con.KEYEVENTF_KEYUP,0)
