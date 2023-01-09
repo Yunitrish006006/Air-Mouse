@@ -1,15 +1,13 @@
-from dataclasses import dataclass
-from email.mime import image
-from tkinter import *
-from turtle import update
 import cv2
 import numpy as np
 import math
+import tkinter
 import customtkinter as ctk
 import os
 from PIL import Image
 import win32api
 import win32con
+from typing import *
 from datetime import datetime
 import win32com.client
 
@@ -29,7 +27,7 @@ class AppControl():
     
     def getAction1(self,data,id:int=len(gap)):
         if(self.get_timegap(self.stamp[id])>self.gap[id]):
-            data = data#do something
+            data = data #do something
             win32api.SetCursorPos((round(960), round(540)))
             self.gap[id] = self.get_timegap(self.stamp[id])
             
