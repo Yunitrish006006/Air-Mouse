@@ -73,7 +73,8 @@ class App(ctk.CTk):
             frame = cv2.flip(frame, 1)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.flip(frame,0)
-            print(self.detect_hand(frame))
+            if(mouse_state.get()=="on"):
+                print(self.detect_hand(frame))
             if(ret):
                 def linearization(frame):
                         dst = cv2.Canny(frame, 50, 200, None, 3)
@@ -109,7 +110,7 @@ class App(ctk.CTk):
                         frame = cv2.addWeighted(x, 0.5, y, 0.5, 0.3)
                         return frame
                 if(self.LenMode == "Nolen"): pass
-                elif(self.LenMode == "enhance"):pass
+                elif(self.LenMode == "enhance"): frame = cv2.addWeighted(sobelize(frame),0.7,frame,0.5,0)
                 elif(self.LenMode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
                 elif(self.LenMode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
                 elif(self.LenMode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
@@ -165,7 +166,7 @@ class App(ctk.CTk):
         self.debug_switch.grid(row=5, column=0, pady=10,sticky="s")
         self.debug_switch.deselect()
         
-        option = ["NoLen","sobel","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
+        option = ["NoLen","enhance","sobel","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
         def lenChange(choice) -> None: self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
         self.cam_list.grid(row=6, column=0, pady=10,sticky="s")
