@@ -67,6 +67,10 @@ class App(ctk.CTk):
     SCSHOT=124
     SPACE=61
     SHIFT=44
+    UP=33
+    DOWN=34
+    WINDOWS=91
+    D=68
     def PressR(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
     def ReleaseR(self):
@@ -80,27 +84,34 @@ class App(ctk.CTk):
     def ToMid(self):
         win32api.SetCursorPos((int(self.windos_data[0]/2),int(self.windos_data[1]/2)))
     def NextPage(self):
-        win32api.keybd_event(self.ALT)
-        win32api.keybd_event(self.R_ARROW)
-        win32api.keybd_event(self.R_ARROW)
-        win32api.keybd_event(self.ALT)
+        win32api.keybd_event(self.TAB,0,0,0)
+        win32api.keybd_event(self.R_ARROW,0,0,0)
+        win32api.keybd_event(self.R_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
+        win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
     def PreviousPage(self):
-        win32api.keybd_event(self.ALT)
-        win32api.keybd_event(self.L_ARROW)
-        win32api.keybd_event(self.L_ARROW)
-        win32api.keybd_event(self.ALT)
+        win32api.keybd_event(self.ALT,0,0,0)
+        win32api.keybd_event(self.L_ARROW,0,0,0)
+        win32api.keybd_event(self.L_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
+        win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
     def Paging(self):
-        win32api.keybd_event(self.ALT)
-        win32api.keybd_event(self.TAB)
-        win32api.keybd_event(self.TAB)
-        win32api.keybd_event(self.ALT)
+        win32api.keybd_event(self.TAB,0,0,0)
+        win32api.keybd_event(self.ALT,0,0,0)
+        win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
+        win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
     def Up(self):
-        win32api.keybd_event(self.SHIFT)
-        win32api.keybd_event(self.SPACE)
+        win32api.keybd_event(self.UP,0,0,0)
+        win32api.keybd_event(self.UP,0,win32con.KEYEVENTF_KEYUP,0)
     def Down(self):
-        win32api.keybd_event(self.SPACE)
+        win32api.keybd_event(self.DOWN,0,0,0)
+        win32api.keybd_event(self.DOWN,0,win32con.KEYEVENTF_KEYUP,0)
     def SCREENSHOT(self):
-        win32api.keybd_event(self.SCSHOT)
+        win32api.keybd_event(self.SCSHOT,0,0,0)
+        win32api.keybd_event(self.SCSHOT,0,win32con.KEYEVENTF_KEYUP,0)
+    def HOME(self):
+        win32api.keybd_event(self.WINDOWS,0,0,0)
+        win32api.keybd_event(self.D,0,0,0)
+        win32api.keybd_event(self.D,0,win32con.KEYEVENTF_KEYUP,0)
+        win32api.keybd_event(self.WINDOWS,0,0,0)
     def detect_hand(self,frame):
         result = self.getYolo(frame)
         result.xyxy[0]
@@ -226,8 +237,7 @@ class App(ctk.CTk):
                         elif value[0][6] == "screenshot":
                             self.SCREENSHOT()
                         elif value[0][6] == "home":
-                            win32api.keybd_event(0x58)
-                            win32api.keybd_event(52)
+                            self.HOME()
                         self.put_text(frame,str(str(self.handPosition[0])+str(self.handPosition[1])),30,30,(255,0,0))
                         self.put_text(frame,str(value[0][6]),self.handPosition[0],self.handPosition[1],(255,0,0))
                     else:
