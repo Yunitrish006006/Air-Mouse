@@ -18,6 +18,7 @@ import torch
 import pandas
 #===============================================class title================================================
 class App(ctk.CTk):
+    mode:str = "camera"
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
         self.game_mode_button.configure(fg_color=("gray75", "gray25") if name == "game" else "transparent")
@@ -27,10 +28,13 @@ class App(ctk.CTk):
         self.camera_window.grid_forget()
         if name == "normal":
             self.normal_window.grid(row=0, column=1, sticky="nsew")
+            self.mode = "normal"
         elif name == "game":
             self.game_window.grid(row=0, column=1, sticky="nsew")
+            self.mode = "game"
         elif name == "camera":
             self.camera_window.grid(row=0, column=1, sticky="nsew")
+            self.mode = "camera"
     stablizor:List[int]=[]
     stamp:List[float]=[]
     gap:List[int]=[]
@@ -59,6 +63,10 @@ class App(ctk.CTk):
     ALT=18
     L_ARROW=38
     R_ARROW=39
+    TAB=9
+    SCSHOT=124
+    SPACE=61
+    SHIFT=44
     def PressR(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
     def ReleaseR(self):
@@ -76,11 +84,23 @@ class App(ctk.CTk):
         win32api.keybd_event(self.R_ARROW)
         win32api.keybd_event(self.R_ARROW)
         win32api.keybd_event(self.ALT)
-    def NextPage(self):
+    def PreviousPage(self):
         win32api.keybd_event(self.ALT)
         win32api.keybd_event(self.L_ARROW)
         win32api.keybd_event(self.L_ARROW)
         win32api.keybd_event(self.ALT)
+    def Paging(self):
+        win32api.keybd_event(self.ALT)
+        win32api.keybd_event(self.TAB)
+        win32api.keybd_event(self.TAB)
+        win32api.keybd_event(self.ALT)
+    def Up(self):
+        win32api.keybd_event(self.SHIFT)
+        win32api.keybd_event(self.SPACE)
+    def Down(self):
+        win32api.keybd_event(self.SPACE)
+    def SCREENSHOT(self):
+        win32api.keybd_event(self.SCSHOT)
     def detect_hand(self,frame):
         result = self.getYolo(frame)
         result.xyxy[0]
@@ -171,13 +191,46 @@ class App(ctk.CTk):
                 value:List[str]=self.detect_hand(frame)
                 if debug_switch_state.get():
                     if(len(value)>0):
-                        self.handPosition[0] = int(((float(value[0][0])+float(value[0][2]))/2)*self.g_mouseX_sensitive.get())
-                        self.handPosition[1] = int(((float(value[0][1])+float(value[0][3]))/2)*self.g_mouseY_sensitive.get())
-                        self.SetPosition(self.handPosition[0],self.handPosition[1])
+                        scaleP:List[float] =  [(float(value[0][0])+float(value[0][2]))/640,
+                                             (float(value[0][1])+float(value[0][3]))/360]
+                        if self.mode == "game":
+                            self.handPosition[0] = int(self.windos_data[0]*scaleP[0]*1.2*self.g_mouseX_sensitive.get())
+                            self.handPosition[1] = int(self.windos_data[1]*scaleP[1]*1.2*self.g_mouseY_sensitive.get())
+                            self.SetPosition(self.handPosition[0],self.handPosition[1])
+                        elif self.mode == "normal":
+                            self.handPosition[0] = int(self.windos_data[0]*scaleP[0]*1.2*self.n_mouseX_sensitive.get())
+                            self.handPosition[1] = int(self.windos_data[1]*scaleP[1]*1.2*self.n_mouseY_sensitive.get())
+                            self.SetPosition(self.handPosition[0],self.handPosition[1])
+                        else:
+                            self.handPosition=[300,140]
+                            self.put_text(frame,"camera mode",self.handPosition[0],self.handPosition[1],(255,0,0))
+                        if value[0][6] == "default":
+                            self.ReleaseL()
+                            self.ReleaseR()
+                        elif value[0][6] == "left":
+                            self.PressL()
+                        elif value[0][6] == "right":
+                            self.PressR()
+                        elif value[0][6] == "center":
+                            self.ToMid()
+                        elif value[0][6] == "previous":
+                            self.PreviousPage()
+                        elif value[0][6] == "next":
+                            self.NextPage()
+                        elif value[0][6] == "paging":
+                            self.Paging()
+                        elif value[0][6] == "up":
+                            self.Up()
+                        elif value[0][6] == "down":
+                            self.Down()
+                        elif value[0][6] == "screenshot":
+                            self.SCREENSHOT()
+                        elif value[0][6] == "home":
+                            win32api.keybd_event(0x58)
+                            win32api.keybd_event(52)
                         self.put_text(frame,str(str(self.handPosition[0])+str(self.handPosition[1])),30,30,(255,0,0))
                         self.put_text(frame,str(value[0][6]),self.handPosition[0],self.handPosition[1],(255,0,0))
                     else:
-                        print(self.handPosition[0],self.handPosition[1])
                         self.put_text(frame,"empty",self.handPosition[0],self.handPosition[1],(255,0,0))
             return Image.fromarray(filter(frame,self.FilterMode))
         def getIcon(name,width,height) -> ctk.CTkImage:
@@ -244,7 +297,7 @@ class App(ctk.CTk):
         self.normal_window = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.normal_window.grid_columnconfigure(5, weight=1)
         self.normal_cam = ctk.CTkLabel(self.normal_window,text="",image=camera)
-        self.normal_cam.grid(row=0, column=0, padx=20, pady=10)
+        self.normal_cam.grid(row=0, column=0, columnspan=5, padx=20, pady=10)
         
         self.n_mouseX_Label = ctk.CTkLabel(self.normal_window,text="X sensitive: ")
         self.n_mouseX_Label.grid(row=3, column=0, padx=20, pady=10)
