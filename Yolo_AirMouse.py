@@ -16,7 +16,7 @@ from datetime import datetime
 import win32com.client
 import torch
 import pandas
-
+#===============================================class title================================================
 class App(ctk.CTk):
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
@@ -47,7 +47,7 @@ class App(ctk.CTk):
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
-    getYolo = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
+    getYolo = torch.hub.load('ultralytics/yolov5','custom',path="src/mode/the_best.pt")
     FilterMode="NoLen"
     windos_data:List[int]=[1920,1080]
     def getWinInfo(self):
@@ -170,6 +170,7 @@ class App(ctk.CTk):
                     if(len(value)>0):
                         self.handPosition[0] = int((float(value[0][0])/2+float(value[0][2]))/2)
                         self.handPosition[1] = int((float(value[0][1])/2+float(value[0][3]))/2)
+                        self.put_text(frame,str(str(self.handPosition[0])+str(self.handPosition[1])),30,30,(255,0,0))
                         self.put_text(frame,str(value[0][6]),self.handPosition[0],self.handPosition[1],(255,0,0))
                     else:
                         print(self.handPosition[0],self.handPosition[1])
