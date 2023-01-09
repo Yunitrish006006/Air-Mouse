@@ -8,6 +8,7 @@ import math
 import tkinter
 import customtkinter as ctk
 import os
+import pyautogui
 from PIL import Image
 import win32api
 import win32con
@@ -56,7 +57,7 @@ class App(ctk.CTk):
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
     getYolo = torch.hub.load('ultralytics/yolov5','custom',path="src/model/the_best.pt")
     FilterMode="NoLen"
-    windos_data:List[int]=[1920,1080]
+    windos_data:List[int]=[3072,1920]
     def getWinInfo(self):
         self.windos_data[0] = self.winfo_screenwidth()
         self.windos_data[1] = self.winfo_screenheight()
@@ -76,39 +77,46 @@ class App(ctk.CTk):
     D=68
     lastshot=datetime.now().timestamp()
     def PressR(self):
-        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
-        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
+        pyautogui.click(button='right')
+        # win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+        # win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
         self.lst = [-1 for _ in range(20)]
     def ReleaseR(self):
-        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
+        pass
+        # win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
     def PressL(self):
-        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
-        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+        pyautogui.click(clicks=2,button='left')
+        # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+        # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
         self.lst = [-1 for _ in range(20)]
     def ReleaseL(self):
-        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
+        pass
+        # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
     def SetPosition(self,x:int,y:int):
         win32api.SetCursorPos((x,y))
     def ToMid(self):
         win32api.SetCursorPos((int(self.windos_data[0]/2),int(self.windos_data[1]/2)))
         self.lst = [-1 for _ in range(20)]
     def NextPage(self):
-        win32api.keybd_event(self.TAB,0,0,0)
-        win32api.keybd_event(self.R_ARROW,0,0,0)
-        win32api.keybd_event(self.R_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
-        win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
+        pyautogui.hotkey('alt', 'right')
+        # win32api.keybd_event(self.TAB,0,0,0)
+        # win32api.keybd_event(self.R_ARROW,0,0,0)
+        # win32api.keybd_event(self.R_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
+        # win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
         self.lst = [-1 for _ in range(20)]
     def PreviousPage(self):
-        win32api.keybd_event(self.ALT,0,0,0)
-        win32api.keybd_event(self.L_ARROW,0,0,0)
-        win32api.keybd_event(self.L_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
-        win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
+        pyautogui.hotkey('alt', 'left')
+        # win32api.keybd_event(self.ALT,0,0,0)
+        # win32api.keybd_event(self.L_ARROW,0,0,0)
+        # win32api.keybd_event(self.L_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
+        # win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
         self.lst = [-1 for _ in range(20)]
     def Paging(self):
-        win32api.keybd_event(self.TAB,0,0,0)
-        win32api.keybd_event(self.ALT,0,0,0)
-        win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
-        win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
+        pyautogui.hotkey('alt', 'tab') 
+        # win32api.keybd_event(self.TAB,0,0,0)
+        # win32api.keybd_event(self.ALT,0,0,0)
+        # win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
+        # win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
         self.lst = [-1 for _ in range(20)]
     def Up(self):
         win32api.keybd_event(self.UP,0,0,0)
@@ -121,24 +129,22 @@ class App(ctk.CTk):
     def SCREENSHOT(self):
         global lastshot
 
-        if self.mode=='camera' and datetime.now().timestamp()-self.lastshot>500:
+        if self.mode=='camera' and datetime.now().timestamp()-self.lastshot>16:
 
             camera_update().save("Test/"+str(self.x)+".png")
-            print(str(datetime.now().timestamp()-self.lastshot))
-            self.x+=1
+            # print(str(datetime.now().timestamp()-self.lastshot))
+            # self.x+=1
             self.lastshot = datetime.now().timestamp()
-        self.lst = [-1 for _ in range(20)]
-        
+
         # win32api.keybd_event(self.SCSHOT,0,0,0)
         # time.sleep(1)
         # win32api.keybd_event(self.SCSHOT,0,win32con.KEYEVENTF_KEYUP,0)
-
-        self.lst = [-1 for _ in range(20)]
     def HOME(self):
-        win32api.keybd_event(self.WINDOWS,0,0,0)
-        win32api.keybd_event(self.D,0,0,0)
-        win32api.keybd_event(self.D,0,win32con.KEYEVENTF_KEYUP,0)
-        win32api.keybd_event(self.WINDOWS,0,win32con.KEYEVENTF_KEYUP,0)
+        pyautogui.hotkey('winleft', 'd')
+        # win32api.keybd_event(self.WINDOWS,0,0,0)
+        # win32api.keybd_event(self.D,0,0,0)
+        # win32api.keybd_event(self.D,0,win32con.KEYEVENTF_KEYUP,0)
+        # win32api.keybd_event(self.WINDOWS,0,win32con.KEYEVENTF_KEYUP,0)
         self.lst = [-1 for _ in range(20)]
     def detect_hand(self,frame):
         result = self.getYolo(frame)
@@ -277,12 +283,12 @@ class App(ctk.CTk):
                             win32api.keybd_event(0,0,win32con.KEYEVENTF_KEYUP,0)
                             # self.ReleaseL()
                             # self.ReleaseR()
-                        # if temp == 10:
-                        #     self.ReleaseL()
-                        #     self.ReleaseR()
-                        elif temp == 0 and self.mode=="normal":
+                        if temp == 10:
+                            self.ReleaseL()
+                            self.ReleaseR()
+                        elif temp == 0:
                             self.PressL()
-                        elif temp == 1 and self.mode=="normal":
+                        elif temp == 1:
                             self.PressR()
                         elif temp == 2:
                             self.ToMid()
