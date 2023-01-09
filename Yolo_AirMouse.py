@@ -10,12 +10,13 @@ import win32con
 from typing import *
 from datetime import datetime
 import win32com.client
+import torch
 
 class AppControl():
     data = None
-    stablizor:list[int]=[]
-    stamp:list[float]=[]
-    gap:list[int]=[]
+    stablizor:List[int]=[]
+    stamp:List[float]=[]
+    gap:List[int]=[]
     def __init__(self,frame:Image) -> None:
         global data
         data = frame
@@ -49,11 +50,12 @@ class App(ctk.CTk):
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
-    
+    model = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
     LenMode="NoLen"
 
     def __init__(self) -> None:
         super().__init__()
+        model = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "src\\image")
         self.iconbitmap(os.path.join(image_path, "rat.ico"))
         self.title("   Air Mouse")
@@ -100,26 +102,16 @@ class App(ctk.CTk):
                         y = cv2.convertScaleAbs(y)
                         frame = cv2.addWeighted(x, 0.5, y, 0.5, 0.3)
                         return frame
-                if(self.LenMode == "Nolen"):
-                    pass
-                elif(self.LenMode == "noise"):
-                    frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
-                elif(self.LenMode == "black"):
-                    frame = np.zeros((360,640,3),dtype=np.uint8)
-                elif(self.LenMode == "white"):
-                    frame = np.ones((360,640,3),dtype=np.uint8)*255
-                elif(self.LenMode == "sobel"):
-                    frame = sobelize(frame)
-                elif(self.LenMode == "lines"):
-                    frame = linearization(frame)
-                elif(self.LenMode == "revert"):
-                    frame = abs(255-frame)
-                elif(self.LenMode == "blur"):
-                    frame = cv2.addWeighted(abs(sobelize(frame) + 30),0.7,frame,1,0)
-                elif(self.LenMode == "GrayScale"):
-                    frame = grayscalize(frame)
-                elif(self.LenMode == "revert_sobel"):
-                    frame = cv2.addWeighted(sobelize(255-frame),0.7,frame,1,0)
+                if(self.LenMode == "Nolen"): pass
+                elif(self.LenMode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
+                elif(self.LenMode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
+                elif(self.LenMode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
+                elif(self.LenMode == "sobel"): frame = sobelize(frame)
+                elif(self.LenMode == "lines"): frame = linearization(frame)
+                elif(self.LenMode == "revert"): frame = abs(255-frame)
+                elif(self.LenMode == "blur"): frame = cv2.addWeighted(abs(sobelize(frame) + 30),0.7,frame,1,0)
+                elif(self.LenMode == "GrayScale"): frame = grayscalize(frame)
+                elif(self.LenMode == "revert_sobel"): frame = cv2.addWeighted(sobelize(255-frame),0.7,frame,1,0)
                 return Image.fromarray(frame)
             else:
                 return Image.fromarray(np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8))
@@ -134,8 +126,8 @@ class App(ctk.CTk):
                 fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                 image=getIcon(icon,32,32), anchor="w", command=lambda:self.select_frame_by_name(name))
         
-        def getDeviceList() -> list[str]:
-            deviceList:list[str]=["default camera"]
+        def getDeviceList() -> List[str]:
+            deviceList:List[str]=["default camera"]
             wmi = win32com.client.GetObject ("winmgmts:")
             for usb in wmi.InstancesOf ("Win32_USBHub"):
                 deviceList.append(str(usb.DeviceID))
