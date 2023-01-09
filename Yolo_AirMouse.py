@@ -16,6 +16,8 @@ import win32com.client
 import torch
 import pandas
 
+from Main import gray_scale
+
 class AppControl():
     data = None
     stablizor:List[int]=[]
@@ -129,8 +131,17 @@ class App(ctk.CTk):
                         y = cv2.convertScaleAbs(y)
                         frame = cv2.addWeighted(x, 0.5, y, 0.5, 0.3)
                         return frame
+                def scatchalize(frame):
+                    kernal = np.ones((3,3),np.uint8)
+                    frame = abs(255-frame)
+                    frame = cv2.dilate(frame,kernal,iterations=5)
+                    layer1 = abs(255-cv2.cvtColor(cv2.Canny(frame, 80, 340, None, 3), cv2.COLOR_GRAY2RGB))
+                    layer2 = cv2.cvtColor(cv2.Canny(frame, 80, 340, None, 3), cv2.COLOR_GRAY2RGB)
+                    frame = cv2.addWeighted(layer1,0.8,layer2,1,0)
+                    frame = cv2.dilate(frame,kernal,iterations=1)
+                    return frame
                 if(self.LenMode == "Nolen"): pass
-                elif(self.LenMode == "enhance"): frame = cv2.addWeighted(sobelize(frame),0.7,frame,0.5,0)
+                elif(self.LenMode == "enhance"): frame = scatchalize(frame)
                 elif(self.LenMode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
                 elif(self.LenMode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
                 elif(self.LenMode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
