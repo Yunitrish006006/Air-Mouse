@@ -20,10 +20,7 @@ import time
 #===============================================class title================================================
 class App(ctk.CTk):
     mode:str = "camera"
-    global snap
-    def snap(self):
-        camera_update().save("Test/"+str(self.x)+".png")
-        self.x+=1
+    
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
         self.game_mode_button.configure(fg_color=("gray75", "gray25") if name == "game" else "transparent")
@@ -122,7 +119,8 @@ class App(ctk.CTk):
         self.lst = [-1 for _ in range(20)]
     def SCREENSHOT(self):
         if self.mode=='camera':
-            self.snap()
+            camera_update().save("Test/"+str(self.x)+".png")
+            self.x+=1
         # win32api.keybd_event(self.SCSHOT,0,0,0)
         # time.sleep(1)
         # win32api.keybd_event(self.SCSHOT,0,win32con.KEYEVENTF_KEYUP,0)
@@ -398,10 +396,10 @@ class App(ctk.CTk):
         self.camera_camera = ctk.CTkLabel(self.camera_window,text="",image=camera)
         self.camera_camera.grid(row=0, column=0, padx=20, pady=10)
         self.x = 0
-        # def snap():
-        #     camera_update().save("Test/"+str(self.x)+".png")
-        #     self.x+=1
-        self.cheese_button = ctk.CTkButton(self.camera_window, text="cheese", compound="left",command=self.snap)
+        def snap():
+            camera_update().save("Test/"+str(self.x)+".png")
+            self.x+=1
+        self.cheese_button = ctk.CTkButton(self.camera_window, text="cheese", compound="left",command=snap)
         self.cheese_button.grid(row=2, column=0, padx=20, pady=10)
         
         self.select_frame_by_name("camera")
