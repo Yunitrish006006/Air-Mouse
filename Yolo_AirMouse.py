@@ -165,6 +165,7 @@ class App(ctk.CTk):
             frame = cv2.flip(frame, 1)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.flip(frame,0)
+            frame = len(frame,self.LenMode)
             if mouse_state.get()=="on":
                 value:List[str]=self.detect_hand(frame)
                 if debug_switch_state.get():
@@ -175,7 +176,7 @@ class App(ctk.CTk):
                     else:
                         print(self.handPosition[0],self.handPosition[1])
                         self.put_text(frame,"empty",self.handPosition[0],self.handPosition[1],(255,0,0))
-            return Image.fromarray(len(frame,self.LenMode))
+            return Image.fromarray(frame)
         def getIcon(name,width,height) -> ctk.CTkImage:
             return ctk.CTkImage(
                 light_image=Image.open(os.path.join(image_path, name)),
