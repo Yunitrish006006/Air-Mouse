@@ -123,7 +123,14 @@ class App(ctk.CTk):
                     frame = cv2.dilate(frame,kernal,iterations=2)
                     frame = cv2.erode(frame,kernal,iterations=2)
                 return frame
+            def DE(frame):
+                kernal = np.ones((3,3),np.uint8)
+                for _ in range(0,3):
+                    frame = cv2.erode(frame,kernal,iterations=2)
+                    frame = cv2.dilate(frame,kernal,iterations=2)
+                return frame
             if(mode == "Nolen"): pass
+            elif(mode == "DE"): frame = DE(frame)
             elif(mode == "enhance"): frame = enhancialize(frame)
             elif(mode == "enhance_gray"): frame = gray_scale(enhancialize(frame))
             elif(mode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
@@ -201,7 +208,7 @@ class App(ctk.CTk):
         self.debug_switch.grid(row=6, column=0, pady=10,sticky="s")
         self.debug_switch.deselect()
         
-        option = ["NoLen","enhance","enhance_gray","sobel","sobel_gray","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
+        option = ["NoLen","GrayScale","DE","enhance","enhance_gray","sobel","sobel_gray","revert_sobel","blur","lines","noise","black","white","revert"]
         def lenChange(choice) -> None: self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
         self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
@@ -243,7 +250,7 @@ class App(ctk.CTk):
         self.cheese_button.grid(row=2, column=0, padx=20, pady=10)
         
         
-        self.select_frame_by_name("normal")
+        self.select_frame_by_name("camera")
 
 if __name__ == "__main__":
     app = App()
