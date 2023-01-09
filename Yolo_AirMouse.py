@@ -356,4 +356,5 @@ if __name__ == "__main__":
         camera.configure(dark_image=camera_update())
         app.after(1, task)
     app.after(1,task())
+    app.wm_attributes('-topmost',1)
     app.mainloop()
