@@ -82,23 +82,8 @@ class App(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
         # 載入影像
         global camera_update
-        def camera_update() -> Image:
-            ret, frame = self.camera.read()
-            frame = cv2.flip(frame, 1)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = cv2.flip(frame,0)
-            if mouse_state.get()=="on":
-                value:List[str]=self.detect_hand(frame)
-                if debug_switch_state.get():
-                    if(len(value)>0):
-                        self.px = int((float(value[0][0])/2+float(value[0][2]))/2)
-                        self.py = int((float(value[0][1])/2+float(value[0][3]))/2)
-                        self.put_text(frame,str(value[0][6]),self.px,self.py,(255,0,0))
-                    else:
-                        print(self.px,self.py)
-                        self.put_text(frame,"empty",self.px,self.py,(255,0,0))
-            if ret:
-                def linearization(frame):
+        def len(frame:np.dtype,mode:str):
+            def linearization(frame):
                         dst = cv2.Canny(frame, 50, 200, None, 3)
                         cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
                         cdstP = np.copy(cdst)
@@ -122,37 +107,54 @@ class App(ctk.CTk):
                                 cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]),
                                         (0, 255, 0), 1, cv2.LINE_AA)
                         return cdstP
-                def grayscalize(frame):
-                    return cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2RGB)
-                def sobelize(frame):
-                        x = abs(cv2.Sobel(frame, cv2.CV_16S, 1, 0))
-                        y = abs(cv2.Sobel(frame, cv2.CV_16S, 0, 1))
-                        x = cv2.convertScaleAbs(x)
-                        y = cv2.convertScaleAbs(y)
-                        frame = cv2.addWeighted(x, 0.5, y, 0.5, 0.3)
-                        return frame
-                def enhancialize(frame):
-                    kernal = np.ones((3,3),np.uint8)
-                    frame = abs(255-frame)
-                    for i in range(0,3):
-                        frame = cv2.dilate(frame,kernal,iterations=2)
-                        frame = cv2.erode(frame,kernal,iterations=2)
+            def grayscalize(frame):
+                return cv2.cvtColor(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2RGB)
+            def sobelize(frame):
+                    x = abs(cv2.Sobel(frame, cv2.CV_16S, 1, 0))
+                    y = abs(cv2.Sobel(frame, cv2.CV_16S, 0, 1))
+                    x = cv2.convertScaleAbs(x)
+                    y = cv2.convertScaleAbs(y)
+                    frame = cv2.addWeighted(x, 0.5, y, 0.5, 0.3)
                     return frame
-                if(self.LenMode == "Nolen"): pass
-                elif(self.LenMode == "enhance"): frame = enhancialize(frame)
-                elif(self.LenMode == "enhance_gray"): frame = gray_scale(enhancialize(frame))
-                elif(self.LenMode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
-                elif(self.LenMode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
-                elif(self.LenMode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
-                elif(self.LenMode == "sobel"): frame = sobelize(frame)
-                elif(self.LenMode == "lines"): frame = linearization(frame)
-                elif(self.LenMode == "revert"): frame = abs(255-frame)
-                elif(self.LenMode == "blur"): frame = cv2.addWeighted(abs(sobelize(frame) + 30),0.7,frame,1,0)
-                elif(self.LenMode == "GrayScale"): frame = grayscalize(frame)
-                elif(self.LenMode == "revert_sobel"): frame = cv2.addWeighted(sobelize(255-frame),0.7,frame,1,0)
-                return Image.fromarray(frame)
-            else:
-                return Image.fromarray(np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8))
+            def enhancialize(frame):
+                kernal = np.ones((3,3),np.uint8)
+                frame = abs(255-frame)
+                for i in range(0,3):
+                    frame = cv2.dilate(frame,kernal,iterations=2)
+                    frame = cv2.erode(frame,kernal,iterations=2)
+                return frame
+            if(mode == "Nolen"): pass
+            elif(mode == "enhance"): frame = enhancialize(frame)
+            elif(mode == "enhance_gray"): frame = gray_scale(enhancialize(frame))
+            elif(mode == "noise"): frame = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
+            elif(mode == "black"): frame = np.zeros((360,640,3),dtype=np.uint8)
+            elif(mode == "white"): frame = np.ones((360,640,3),dtype=np.uint8)*255
+            elif(mode == "sobel"): frame = sobelize(frame)
+            elif(mode == "sobel_gray"): frame = gray_scale(sobelize(frame))
+            elif(mode == "lines"): frame = linearization(frame)
+            elif(mode == "revert"): frame = abs(255-frame)
+            elif(mode == "blur"): frame = cv2.addWeighted(abs(sobelize(frame) + 30),0.7,frame,1,0)
+            elif(mode == "GrayScale"): frame = grayscalize(frame)
+            elif(mode == "revert_sobel"): frame = cv2.addWeighted(sobelize(255-frame),0.7,frame,1,0)
+            else:pass
+            return frame
+            
+        def camera_update() -> Image:
+            _, frame = self.camera.read()
+            frame = cv2.flip(frame, 1)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.flip(frame,0)
+            if mouse_state.get()=="on":
+                value:List[str]=self.detect_hand(frame)
+                if debug_switch_state.get():
+                    if(len(value)>0):
+                        self.px = int((float(value[0][0])/2+float(value[0][2]))/2)
+                        self.py = int((float(value[0][1])/2+float(value[0][3]))/2)
+                        self.put_text(frame,str(value[0][6]),self.px,self.py,(255,0,0))
+                    else:
+                        print(self.px,self.py)
+                        self.put_text(frame,"empty",self.px,self.py,(255,0,0))
+            return Image.fromarray(len(frame,self.LenMode))
         def getIcon(name,width,height) -> ctk.CTkImage:
             return ctk.CTkImage(
                 light_image=Image.open(os.path.join(image_path, name)),
@@ -199,7 +201,7 @@ class App(ctk.CTk):
         self.debug_switch.grid(row=6, column=0, pady=10,sticky="s")
         self.debug_switch.deselect()
         
-        option = ["NoLen","enhance","enhance_gray","sobel","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
+        option = ["NoLen","enhance","enhance_gray","sobel","sobel_gray","revert_sobel","blur","lines","noise","black","white","revert","GrayScale"]
         def lenChange(choice) -> None: self.LenMode = choice
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=lenChange)
         self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
