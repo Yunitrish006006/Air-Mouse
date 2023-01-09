@@ -16,9 +16,14 @@ from datetime import datetime
 import win32com.client
 import torch
 import pandas
+import time
 #===============================================class title================================================
 class App(ctk.CTk):
     mode:str = "camera"
+    global snap
+    def snap(self):
+        camera_update().save("Test/"+str(self.x)+".png")
+        self.x+=1
     def select_frame_by_name(self, name) -> None:
         self.normal_mode_button.configure(fg_color=("gray75", "gray25") if name == "normal" else "transparent")
         self.game_mode_button.configure(fg_color=("gray75", "gray25") if name == "game" else "transparent")
@@ -38,6 +43,7 @@ class App(ctk.CTk):
     stablizor:List[int]=[]
     stamp:List[float]=[]
     gap:List[int]=[]
+    lst:List[str]=[]
     def get_timegap(time:float=datetime.now().timestamp()) -> float:
         return datetime.now().timestamp()-time
     def getAction1(self,data,id:int=len(gap)):
@@ -64,7 +70,7 @@ class App(ctk.CTk):
     L_ARROW=38
     R_ARROW=39
     TAB=9
-    SCSHOT=124
+    SCSHOT=121
     SPACE=61
     SHIFT=44
     UP=33
@@ -73,45 +79,61 @@ class App(ctk.CTk):
     D=68
     def PressR(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0)
+        win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
+        self.lst = [-1 for _ in range(20)]
     def ReleaseR(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0)
     def PressL(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+        self.lst = [-1 for _ in range(20)]
     def ReleaseL(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
     def SetPosition(self,x:int,y:int):
         win32api.SetCursorPos((x,y))
     def ToMid(self):
         win32api.SetCursorPos((int(self.windos_data[0]/2),int(self.windos_data[1]/2)))
+        self.lst = [-1 for _ in range(20)]
     def NextPage(self):
         win32api.keybd_event(self.TAB,0,0,0)
         win32api.keybd_event(self.R_ARROW,0,0,0)
         win32api.keybd_event(self.R_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
         win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
+        self.lst = [-1 for _ in range(20)]
     def PreviousPage(self):
         win32api.keybd_event(self.ALT,0,0,0)
         win32api.keybd_event(self.L_ARROW,0,0,0)
         win32api.keybd_event(self.L_ARROW,0,win32con.KEYEVENTF_KEYUP,0)
         win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
+        self.lst = [-1 for _ in range(20)]
     def Paging(self):
         win32api.keybd_event(self.TAB,0,0,0)
         win32api.keybd_event(self.ALT,0,0,0)
         win32api.keybd_event(self.ALT,0,win32con.KEYEVENTF_KEYUP,0)
         win32api.keybd_event(self.TAB,0,win32con.KEYEVENTF_KEYUP,0)
+        self.lst = [-1 for _ in range(20)]
     def Up(self):
         win32api.keybd_event(self.UP,0,0,0)
         win32api.keybd_event(self.UP,0,win32con.KEYEVENTF_KEYUP,0)
+        self.lst = [-1 for _ in range(20)]
     def Down(self):
         win32api.keybd_event(self.DOWN,0,0,0)
         win32api.keybd_event(self.DOWN,0,win32con.KEYEVENTF_KEYUP,0)
+        self.lst = [-1 for _ in range(20)]
     def SCREENSHOT(self):
-        win32api.keybd_event(self.SCSHOT,0,0,0)
-        win32api.keybd_event(self.SCSHOT,0,win32con.KEYEVENTF_KEYUP,0)
+        if self.mode=='camera':
+            self.snap()
+        # win32api.keybd_event(self.SCSHOT,0,0,0)
+        # time.sleep(1)
+        # win32api.keybd_event(self.SCSHOT,0,win32con.KEYEVENTF_KEYUP,0)
+
+        self.lst = [-1 for _ in range(20)]
     def HOME(self):
         win32api.keybd_event(self.WINDOWS,0,0,0)
         win32api.keybd_event(self.D,0,0,0)
         win32api.keybd_event(self.D,0,win32con.KEYEVENTF_KEYUP,0)
-        win32api.keybd_event(self.WINDOWS,0,0,0)
+        win32api.keybd_event(self.WINDOWS,0,win32con.KEYEVENTF_KEYUP,0)
+        self.lst = [-1 for _ in range(20)]
     def detect_hand(self,frame):
         result = self.getYolo(frame)
         result.xyxy[0]
@@ -200,47 +222,81 @@ class App(ctk.CTk):
             frame = cv2.flip(frame,0)
             if mouse_state.get()=="on":
                 value:List[str]=self.detect_hand(frame)
+                
                 if debug_switch_state.get():
                     if(len(value)>0):
+                        # print(value[0][6])
+                        self.lst.append(value[0][5])
+                        if len(self.lst)>30:
+                            self.lst.pop(0)
                         scaleP:List[float] =  [(float(value[0][0])+float(value[0][2]))/640,
                                              (float(value[0][1])+float(value[0][3]))/360]
                         if self.mode == "game":
-                            self.handPosition[0] = int(self.windos_data[0]*scaleP[0]*1.2*self.g_mouseX_sensitive.get())
-                            self.handPosition[1] = int(self.windos_data[1]*scaleP[1]*1.2*self.g_mouseY_sensitive.get())
+                            self.handPosition[0] = int(self.windos_data[0]*scaleP[0]*1.5*self.g_mouseX_sensitive.get())
+                            self.handPosition[1] = int(self.windos_data[1]*scaleP[1]*1.5*self.g_mouseY_sensitive.get())
                             self.SetPosition(self.handPosition[0],self.handPosition[1])
                         elif self.mode == "normal":
-                            self.handPosition[0] = int(self.windos_data[0]*scaleP[0]*1.2*self.n_mouseX_sensitive.get())
-                            self.handPosition[1] = int(self.windos_data[1]*scaleP[1]*1.2*self.n_mouseY_sensitive.get())
+                            self.handPosition[0] = int(self.windos_data[0]*scaleP[0]*1.5*self.n_mouseX_sensitive.get())
+                            self.handPosition[1] = int(self.windos_data[1]*scaleP[1]*1.5*self.n_mouseY_sensitive.get())
                             self.SetPosition(self.handPosition[0],self.handPosition[1])
                         else:
                             self.handPosition=[300,140]
                             self.put_text(frame,"camera mode",self.handPosition[0],self.handPosition[1],(255,0,0))
-                        if value[0][6] == "default":
-                            self.ReleaseL()
-                            self.ReleaseR()
-                        elif value[0][6] == "left":
+                        temp = max(set(self.lst),key=self.lst.count)
+                        # if value[0][6] == "default":
+                        #     self.ReleaseL()
+                        #     self.ReleaseR()
+                        # elif value[0][6] == "left":
+                        #     self.PressL()
+                        # elif value[0][6] == "right":
+                        #     self.PressR()
+                        # elif value[0][6] == "center":
+                        #     self.ToMid()
+                        # elif value[0][6] == "previous":
+                        #     self.PreviousPage()
+                        # elif value[0][6] == "next":
+                        #     self.NextPage()
+                        # elif value[0][6] == "paging":
+                        #     self.Paging()
+                        # elif value[0][6] == "up":
+                        #     self.Up()
+                        # elif value[0][6] == "down":
+                        #     self.Down()
+                        # elif value[0][6] == "screenshot":
+                        #     self.SCREENSHOT()
+                        # elif value[0][6] == "home":
+                        #     self.HOME()
+                        print(temp)
+                        self.put_text(frame,str(temp),30,60,(255,0,0))
+                        if temp == -1:
+                            win32api.keybd_event(0,0,win32con.KEYEVENTF_KEYUP,0)
+                            # self.ReleaseL()
+                            # self.ReleaseR()
+                        # if temp == 10:
+                        #     self.ReleaseL()
+                        #     self.ReleaseR()
+                        elif temp == 0 and self.mode=="normal":
                             self.PressL()
-                        elif value[0][6] == "right":
+                        elif temp == 1 and self.mode=="normal":
                             self.PressR()
-                        elif value[0][6] == "center":
+                        elif temp == 2:
                             self.ToMid()
-                        elif value[0][6] == "previous":
+                        elif temp == 6:
                             self.PreviousPage()
-                        elif value[0][6] == "next":
+                        elif temp == 7:
                             self.NextPage()
-                        elif value[0][6] == "paging":
+                        elif temp == 5:
                             self.Paging()
-                        elif value[0][6] == "up":
+                        elif temp == 3:
                             self.Up()
-                        elif value[0][6] == "down":
+                        elif temp == 4:
                             self.Down()
-                        elif value[0][6] == "screenshot":
+                        elif temp == 8:
                             self.SCREENSHOT()
-                        elif value[0][6] == "home":
+                        elif temp == 9:
                             self.HOME()
-                            
                         self.put_text(frame,str(str(self.handPosition[0])+str(self.handPosition[1])),30,30,(255,0,0))
-                        self.put_text(frame,str(value[0][6]),self.handPosition[0],self.handPosition[1],(255,0,0))
+                        
                     else:
                         self.put_text(frame,"empty",self.handPosition[0],self.handPosition[1],(255,0,0))
             return Image.fromarray(filter(frame,self.FilterMode))
@@ -342,10 +398,10 @@ class App(ctk.CTk):
         self.camera_camera = ctk.CTkLabel(self.camera_window,text="",image=camera)
         self.camera_camera.grid(row=0, column=0, padx=20, pady=10)
         self.x = 0
-        def snap():
-            camera_update().save("Test/"+str(self.x)+".png")
-            self.x+=1
-        self.cheese_button = ctk.CTkButton(self.camera_window, text="cheese", compound="left",command=snap)
+        # def snap():
+        #     camera_update().save("Test/"+str(self.x)+".png")
+        #     self.x+=1
+        self.cheese_button = ctk.CTkButton(self.camera_window, text="cheese", compound="left",command=self.snap)
         self.cheese_button.grid(row=2, column=0, padx=20, pady=10)
         
         self.select_frame_by_name("camera")
@@ -354,7 +410,7 @@ if __name__ == "__main__":
     app = App()
     def task() -> None:
         camera.configure(dark_image=camera_update())
-        app.after(1, task)
-    app.after(1,task())
+        app.after(20, task)
+    app.after(20,task())
     app.wm_attributes('-topmost',1)
     app.mainloop()
