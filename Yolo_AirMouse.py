@@ -11,6 +11,7 @@ from typing import *
 from datetime import datetime
 import win32com.client
 import torch
+import pandas
 
 class AppControl():
     data = None
@@ -50,12 +51,16 @@ class App(ctk.CTk):
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
-    model = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
+    getYolo = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
     LenMode="NoLen"
-
+    
+    def detect_hand(self,frame):
+        result = self.getYolo(frame)
+        result.xyxy[0]
+        return result.pandas().xyxy[0]
+    
     def __init__(self) -> None:
         super().__init__()
-        model = torch.hub.load('ultralytics/yolov5','custom',path="best.pt")
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "src\\image")
         self.iconbitmap(os.path.join(image_path, "rat.ico"))
         self.title("   Air Mouse")
@@ -68,6 +73,7 @@ class App(ctk.CTk):
             ret, frame = self.camera.read()
             frame = cv2.flip(frame, 1)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            print(self.detect_hand(frame))
             if(ret):
                 def linearization(frame):
                         dst = cv2.Canny(frame, 50, 200, None, 3)
