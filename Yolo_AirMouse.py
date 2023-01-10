@@ -379,12 +379,12 @@ class App(ctk.CTk):
         
         self.n_mouseX_Label = ctk.CTkLabel(self.normal_window,text="X sensitive: ")
         self.n_mouseX_Label.grid(row=3, column=0, padx=20, pady=10)
-        self.n_mouseX_sensitive = ctk.CTkSlider(self.normal_window, from_=0, to=1, number_of_steps=100)
+        self.n_mouseX_sensitive = ctk.CTkSlider(self.normal_window, from_=0, to=3, number_of_steps=100)
         self.n_mouseX_sensitive.grid(row=3, column=1, columnspan=4, padx=(20, 10), pady=(10, 10), sticky="ew")
         
         self.n_mouseY_Label = ctk.CTkLabel(self.normal_window,text="Y sensitive: ")
         self.n_mouseY_Label.grid(row=4, column=0, padx=20, pady=10)
-        self.n_mouseY_sensitive = ctk.CTkSlider(self.normal_window, from_=0, to=1, number_of_steps=100)
+        self.n_mouseY_sensitive = ctk.CTkSlider(self.normal_window, from_=0, to=3, number_of_steps=100)
         self.n_mouseY_sensitive.grid(row=4, column=1, columnspan=4, padx=(20, 10), pady=(10, 10), sticky="ew")
 
         #game mode
@@ -395,12 +395,12 @@ class App(ctk.CTk):
         
         self.g_mouseX_Label = ctk.CTkLabel(self.game_window,text="X sensitive: ")
         self.g_mouseX_Label.grid(row=3, column=0, padx=20, pady=10)
-        self.g_mouseX_sensitive = ctk.CTkSlider(self.game_window, from_=0, to=1, number_of_steps=100)
+        self.g_mouseX_sensitive = ctk.CTkSlider(self.game_window, from_=0, to=3, number_of_steps=100)
         self.g_mouseX_sensitive.grid(row=3, column=1, columnspan=4, padx=(20, 10), pady=(10, 10), sticky="ew")
         
         self.g_mouseY_Label = ctk.CTkLabel(self.game_window,text="Y sensitive: ")
         self.g_mouseY_Label.grid(row=4, column=0, padx=20, pady=10)
-        self.g_mouseY_sensitive = ctk.CTkSlider(self.game_window, from_=0, to=1, number_of_steps=100)
+        self.g_mouseY_sensitive = ctk.CTkSlider(self.game_window, from_=0, to=3, number_of_steps=100)
         self.g_mouseY_sensitive.grid(row=4, column=1, columnspan=4, padx=(20, 10), pady=(10, 10), sticky="ew")
         
         #camera mode
