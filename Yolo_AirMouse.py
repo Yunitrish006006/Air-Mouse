@@ -18,6 +18,7 @@ import win32com.client
 import torch
 import pandas
 import time
+pyautogui.FAILSAFE = False
 #===============================================class title================================================
 class App(ctk.CTk):
     mode:str = "camera"
