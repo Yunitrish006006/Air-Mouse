@@ -113,7 +113,7 @@ class Filter():
         if len(error_message.split(":"))<2:
             self.put_text(self,frame,error_message,10,10,(255,0,0))
         return frame
-class App(ctk.CTk):
+class AirMouseGUI(ctk.CTk):
     mode:str = "camera"
     stream:np.dtype = np.random.randint(0, 255, size=(360, 640, 3),dtype=np.uint8)
     def window_toogle(self, name) -> None:
@@ -221,12 +221,11 @@ class App(ctk.CTk):
         self.appearance_mode_menu.grid(row=9, column=0, padx=20, pady=10, sticky="s")
         
         # mutual components
-        global camera_frame
-        camera_frame = ctk.CTkImage(dark_image=Image.fromarray(self.stream),size=(640,360))
+        self.camera_frame = ctk.CTkImage(dark_image=Image.fromarray(self.stream),size=(640,360))
         #normal mode
         self.normal_window = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.normal_window.grid_columnconfigure(5, weight=1)
-        self.normal_cam = ctk.CTkLabel(self.normal_window,text="",image=camera_frame)
+        self.normal_cam = ctk.CTkLabel(self.normal_window,text="",image=self.camera_frame)
         self.normal_cam.grid(row=0, column=0, columnspan=5, padx=20, pady=10)
         
         self.n_mouseX_Label = ctk.CTkLabel(self.normal_window,text="X sensitive: ")
@@ -242,7 +241,7 @@ class App(ctk.CTk):
         #game mode
         self.game_window = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.game_window.grid_columnconfigure(5, weight=1)
-        self.game_camera = ctk.CTkLabel(self.game_window,text="",image=camera_frame)
+        self.game_camera = ctk.CTkLabel(self.game_window,text="",image=self.camera_frame)
         self.game_camera.grid(row=0, column=0, columnspan=5, padx=20, pady=10)
         
         self.g_mouseX_Label = ctk.CTkLabel(self.game_window,text="X sensitive: ")
@@ -268,7 +267,7 @@ class App(ctk.CTk):
         #camera mode
         self.camera_window = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.camera_window.grid_columnconfigure(0, weight=1)
-        camera_camera = ctk.CTkLabel(self.camera_window,text="",image=camera_frame)
+        camera_camera = ctk.CTkLabel(self.camera_window,text="",image=self.camera_frame)
         camera_camera.grid(row=0, column=0, padx=20, pady=10)
         cheese_button = ctk.CTkButton(self.camera_window, text="snap shot #0", compound="left",command=lambda:[
             cv2.imwrite("Test/"+cheese_button._text+".png",self.stream),
@@ -287,7 +286,7 @@ class Controlor():
     def do_center(self):
         return self.finger_len_average+self.palm_average>100 and abs(self.finger_len_average)<40
     
-    def loopor(self,video:np.dtype,app:App):
+    def loopor(self,video:np.dtype,app:AirMouseGUI):
         results = hands.process(video)
         thresholds=[]
         if results.multi_hand_landmarks:
@@ -340,7 +339,7 @@ def to_mid(hand_landmarks):
     # if(HMS[0]<40): win32api.SetCursorPos((int(window_width/2),int(window_height/2)))
     return HMS
             
-def right_click(hand_landmarks,rs,app:App):
+def right_click(hand_landmarks,rs,app:AirMouseGUI):
     global index_finger_press
     finger_xs = [hand_landmarks.landmark[i].x * camera_width for i in [10,11,12]]
     finger_ys = [hand_landmarks.landmark[i].y * camera_height for i in [10,11,12]]
@@ -381,7 +380,7 @@ def get_D(hand_landmarks,a:int,b:int):
     except:
         return -99
 
-def left_click(hand_landmarks,ls,app:App):
+def left_click(hand_landmarks,ls,app:AirMouseGUI):
     
     alpha = get_D(hand_landmarks,8,12)
     beta = ((get_D(hand_landmarks,8,6)+get_D(hand_landmarks,12,10)) - (get_D(hand_landmarks,16,14)+get_D(hand_landmarks,20,18))) 
@@ -419,7 +418,7 @@ def hand_skeleton(frame):
             print(hand_landmarks)
     return frame
 
-def control_hub(video:np.dtype,app:App):
+def control_hub(video:np.dtype,app:AirMouseGUI):
     results = hands.process(video)
     thresholds=[]
     if results.multi_hand_landmarks:
@@ -449,12 +448,12 @@ if __name__ == "__main__":
     camera.set(cv2.CAP_PROP_FPS, 60)
     camera_width = camera.get(3)
     camera_height = camera.get(4)
-    app = App()
+    app = AirMouseGUI()
     controlor = Controlor()
     app.window_toogle("normal")
-    app.debug_switch_state.set("on")
-    app.mouse_state.set("on")
-    app.always_ontop.set("on")
+    # app.debug_switch_state.set("on")
+    # app.mouse_state.set("on")
+    # app.always_ontop.set("on")
     window_width = app.winfo_screenwidth()
     window_height = app.winfo_screenheight()
 #==================================================================================
@@ -491,7 +490,7 @@ if __name__ == "__main__":
                     app_title += "🔖"
                 
                 app.title(app_title)
-                camera_frame.configure(dark_image=Image.fromarray(app.stream))
+                app.camera_frame.configure(dark_image=Image.fromarray(app.stream))
                 app.after(10, task)
             
             app.after(10,task())
