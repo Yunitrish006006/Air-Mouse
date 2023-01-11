@@ -458,9 +458,9 @@ if __name__ == "__main__":
             def task() -> None:
                 ret , video = camera.read()
                 if ret:
-                    video = cv2.flip(video, 1)
+                    # video = cv2.flip(video, 1)
                     video = cv2.cvtColor(video, cv2.COLOR_BGR2RGB)
-                    video = cv2.flip(video,0)
+                    # video = cv2.flip(video,0)
                 app_title = " Air Mouse "
                 app.stream = Filter.progress_filter(Filter,video,app.FilterMode)
                 threshholds = []

@@ -56,7 +56,7 @@ class App(ctk.CTk):
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
-    getYolo = torch.hub.load('ultralytics/yolov5','custom',path="src/model/the_best.pt")
+    getYolo = torch.hub.load('ultralytics/yolov5','custom',path="src/model/yun_1.pt")
     FilterMode="NoLen"
     windos_data:List[int]=[3072,1920]
     def getWinInfo(self):
