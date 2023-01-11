@@ -20,26 +20,18 @@ import mediapipe as mp
 import statistics
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
-
 var = [0, 0]
 dir = [0, 0]
-
 is_moving = False
 last_moving = datetime.now().timestamp()
-
 finger_center = [0, 0]
 finger_center_temp = [0, 0]
-
 index_finger_press = False
-
 FTH = False
-
 FIH = False
 FIS = [0,0]
-
 FMH = False
 FMS = [0,0]
-
 HMS = [0,0]
 #===============================================class title================================================
 class Filter():

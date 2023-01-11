@@ -1,0 +1,11 @@
+left
+right
+center
+previous
+next
+paging
+up
+down
+screenshot
+home
+default

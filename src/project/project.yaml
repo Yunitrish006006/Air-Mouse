@@ -1,0 +1,6 @@
+train: data/project/train
+val: data/project/val
+# test: /test
+
+nc: 11
+names: ['left','right', 'center', 'up', 'down', 'paging', 'previous', 'next', 'screenshot', 'home', 'default']
