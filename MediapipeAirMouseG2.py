@@ -204,7 +204,7 @@ class AirMouseGUI(ctk.CTk):
         option = ["origin","grayscale","revert_de","de","enhance","enhance_grayscale","sobel","sobel_grayscale","revert_sobel","blur","lines","noise","black","white","revert"]
         def filterChange(choice) -> None: self.FilterMode = choice
         self.filter_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=filterChange)
-        self.cam_list.grid(row=7, column=0, pady=10,sticky="s")
+        self.filter_list.grid(row=7, column=0, pady=10,sticky="s")
         
         self.cam_list = ctk.CTkComboBox(self.navigation_frame,values=getDeviceList(),command=lambda x:print("you have selected " + str(x) +" as camera"))
         self.cam_list.grid(row=8, column=0, pady=10,sticky="s")

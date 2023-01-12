@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 import math
 import win32com.client
-
+#==============================================================Filter==============================================================
 class Filter():
     layers = ["origin","grayscale","sobel","revert","de","enhance","blur","lines","noise","black","white"]
     def put_text(self,frame:np.dtype,text:str,x:int,y:int,color):
@@ -85,7 +85,7 @@ class Filter():
         if len(error_message.split(":"))<2:
             self.put_text(self,frame,error_message,10,10,(255,0,0))
         return frame
-
+#================================================================UI===================================================================
 class AirMouseUI(ctk.CTk):
     main_frame:ctk.CTkFrame = None
     mouse_state:ctk.StringVar = None
@@ -165,9 +165,7 @@ class AirMouseUI(ctk.CTk):
     
     def snapshot(self):
          cv2.imwrite("Test/"+str(self.FileCount)+".png",self.stream)
-
-
-
+#===============================================================Pages=================================================================
 class Normal(ctk.CTkFrame):
     page_icon = "pc.png"
     page_name = "normal"
@@ -198,9 +196,8 @@ class Camera(ctk.CTkFrame):
             self.file_number.set(str(int(self.file_number.get())+1))
         self.file_number = ctk.StringVar(self,"2550000")
         ctk.CTkEntry(self,textvariable=self.file_number).grid(row=3,column=2)
-        ctk.CTkButton(self, text="Photo",command=lambda:snap()).grid(row=8,column=2)
-            
-
+        ctk.CTkButton(self, text="Photo",command=lambda:snap()).grid(row=8,column=2)     
+#===============================================================Main=================================================================
 if __name__ == "__main__":
     capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
