@@ -1,6 +1,9 @@
 from mimetypes import init
 from tarfile import FIFOTYPE
+from telnetlib import GA
+from time import sleep
 import tkinter as tk
+from tkinter.messagebox import NO
 from tkinter.tix import COLUMN
 from tracemalloc import Snapshot
 import customtkinter as ctk
@@ -101,7 +104,6 @@ class AirMouseUI(ctk.CTk):
         self.geometry("960x640")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
-    
         def getIcon(name:str,width,height) -> ctk.CTkImage:
                 return ctk.CTkImage(
                     light_image=Image.open(os.path.join(image_path, name)),
@@ -129,7 +131,13 @@ class AirMouseUI(ctk.CTk):
         self.mouse_state = ctk.StringVar(value="off")
         self.always_ontop = ctk.StringVar(value="off")
         self.debug_mode = ctk.StringVar(value="off")
-        for c,name in zip([i for i in range(3)],[Normal,Game,Camera]):
+        
+        self.normal_window = Normal
+        self.game_window = Game
+        self.camera_window = Camera
+        
+        
+        for c,name in zip([i for i in range(3)],[self.normal_window,self.game_window,self.camera_window]):
             self.tab = getTab(name)
             self.tab.grid(row=c, column=0, sticky="ew")
         
@@ -152,8 +160,6 @@ class AirMouseUI(ctk.CTk):
         
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
-        if self.main_frame is not None:
-            self.main_frame.destroy()
         self.main_frame = new_frame
         self.main_frame.grid(row=0, column=1, sticky="nsew")
     
@@ -181,28 +187,50 @@ class Game(ctk.CTkFrame):
 class Camera(ctk.CTkFrame):
     page_icon = "camera.png"
     page_name = "camera"
+    file_number = None
     def __init__(self, master: AirMouseUI):
         ctk.CTkFrame.__init__(self, master)
         ctk.CTkFrame.configure(self,fg_color='transparent')
         ctk.CTkLabel(self, text=self.page_name, font=('Helvetica', 18, "bold")).grid_columnconfigure(5, weight=1)
         ctk.CTkLabel(self,text="",image=master.camera_frame).grid(row=0, column=0, columnspan=5, padx=70, pady=10)
-        ctk.CTkButton(self, text="Photo",command=lambda:master.snapshot()).grid(row=8,column=2,pady=100)
+        def snap():
+            cv2.imwrite("Test/"+self.file_number.get()+".png",master.stream)
+            self.file_number.set(str(int(self.file_number.get())+1))
+        self.file_number = ctk.StringVar(self,"2550000")
+        ctk.CTkEntry(self,textvariable=self.file_number).grid(row=3,column=2)
+        ctk.CTkButton(self, text="Photo",command=lambda:snap()).grid(row=8,column=2)
             
 
 if __name__ == "__main__":
-    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
-    camera.set(cv2.CAP_PROP_FPS, 60)
-    camera_width = camera.get(3)
-    camera_height = camera.get(4)
+    capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+    capture.set(cv2.CAP_PROP_FPS, 60)
+    camera_width = capture.get(3)
+    camera_height = capture.get(4)
     app = AirMouseUI()
     window_width = app.winfo_screenwidth()
     window_height = app.winfo_screenheight()
     def task() -> None:
-        ret , video = camera.read()
+        ret , video = capture.read()
         if ret: video = cv2.cvtColor(video, cv2.COLOR_BGR2RGB)
         app.stream = Filter.progress_filter(Filter,video,app.FilterMode)
+        app_title = " Air Mouse "
+        
+        if app.mouse_state.get() == "on":
+            app_title += "🔓"
+        elif app.mouse_state.get() == "off":
+            app_title += "🔒"
+        
+        if app.debug_mode.get() == "on":
+            app_title+="⚙️"
+        elif app.debug_mode.get() == "off":
+            app.stream = app.stream
+        
+        if app.always_ontop.get() == "on":
+            app_title += "🔖"
+        
+        app.title(app_title)
         app.camera_frame.configure(dark_image=Image.fromarray(app.stream))
         app.after(10, task)
     app.after(10,task())
