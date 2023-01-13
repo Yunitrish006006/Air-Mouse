@@ -1,11 +1,13 @@
 from mimetypes import init
+from random import randint
 from tarfile import FIFOTYPE
 from telnetlib import GA
 from time import sleep
 import tkinter as tk
 from tkinter.messagebox import NO
-from tkinter.tix import COLUMN
+from tkinter.tix import COLUMN, IMAGE
 from tracemalloc import Snapshot
+from turtle import width
 import customtkinter as ctk
 import os
 from PIL import Image
@@ -123,29 +125,23 @@ class AirMouseUI(ctk.CTk):
         self.navigation_frame_label = ctk.CTkLabel(self.navigation_frame, text="   Air Mouse", image=getIcon("rat.png",26,26),compound="left", font=ctk.CTkFont(size=15, weight="bold"))
         self.navigation_frame_label.grid(row=0, column=0, padx=20, pady=20)
         
-        option = ["origin","grayscale","revert_de","de","enhance","enhance_grayscale","sobel","sobel_grayscale","revert_sobel","blur","lines","noise","black","white","revert"]
+        option = ["origin","grayscale","revert","revert_de","de","de_lines_sobel_de","enhance","enhance_grayscale","sobel","sobel_grayscale","revert_sobel","blur","lines","noise","black","white"]
         def filterChange(choice) -> None: self.FilterMode = choice
         self.filter_list = ctk.CTkComboBox(self.navigation_frame,values=option,command=filterChange)
         self.filter_list.grid(row=7, column=0, pady=10,sticky="s")
-        
         self.mouse_state = ctk.StringVar(value="off")
         self.always_ontop = ctk.StringVar(value="off")
         self.debug_mode = ctk.StringVar(value="off")
-        
         self.normal_window = Normal
         self.game_window = Game
         self.camera_window = Camera
-        
-        
-        for c,name in zip([i for i in range(3)],[self.normal_window,self.game_window,self.camera_window]):
+        self.train_window = Train
+        for c,name in zip([i for i in range(4)],[self.normal_window,self.game_window,self.camera_window,self.train_window]):
             self.tab = getTab(name)
             self.tab.grid(row=c, column=0, sticky="ew")
-        
         getSwitch(4,self.mouse_state,"滑鼠功能")
         getSwitch(5,self.always_ontop,"視窗置頂",lambda:self.wm_attributes('-topmost',self.always_ontop.get()=="on"))
         getSwitch(6,self.debug_mode,"除錯功能")
-        
-        
         def getDeviceList() -> list[str]:
             deviceList:list[str]=["default camera"]
             wmi = win32com.client.GetObject ("winmgmts:")
@@ -156,13 +152,15 @@ class AirMouseUI(ctk.CTk):
         self.cam_list.grid(row=8, column=0, pady=10,sticky="s")
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navigation_frame, values=["System","Light", "Dark"],command=ctk.set_appearance_mode)
         self.appearance_mode_menu.grid(row=9, column=0, padx=20, pady=10, sticky="s")
-        self.switch_frame(Camera)
-        
+        self.switch_frame(self.normal_window)  
     def switch_frame(self, frame_class):
+        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+        if self.main_frame is not None:
+            self.main_frame.grid_forget()
         new_frame = frame_class(self)
         self.main_frame = new_frame
         self.main_frame.grid(row=0, column=1, sticky="nsew")
-    
     def snapshot(self):
          cv2.imwrite("Test/"+str(self.FileCount)+".png",self.stream)
 #===============================================================Pages=================================================================
@@ -170,6 +168,8 @@ class Normal(ctk.CTkFrame):
     page_icon = "pc.png"
     page_name = "normal"
     def __init__(self, master: AirMouseUI):
+        if master.main_frame is not None:
+            master.main_frame.grid_forget()
         ctk.CTkFrame.__init__(self, master)
         ctk.CTkFrame.configure(self,fg_color='transparent')
         ctk.CTkLabel(self, text=self.page_name, font=('Helvetica', 18, "bold")).grid_columnconfigure(5, weight=1)
@@ -178,6 +178,8 @@ class Game(ctk.CTkFrame):
     page_icon = "nv.png"
     page_name = "game"
     def __init__(self, master: AirMouseUI):
+        if master.main_frame is not None:
+            master.main_frame.grid_forget()
         ctk.CTkFrame.__init__(self, master)
         ctk.CTkFrame.configure(self,fg_color='transparent')
         ctk.CTkLabel(self, text=self.page_name, font=('Helvetica', 18, "bold")).grid_columnconfigure(5, weight=1)
@@ -187,6 +189,8 @@ class Camera(ctk.CTkFrame):
     page_name = "camera"
     file_number = None
     def __init__(self, master: AirMouseUI):
+        if master.main_frame is not None:
+            master.main_frame.grid_forget()
         ctk.CTkFrame.__init__(self, master)
         ctk.CTkFrame.configure(self,fg_color='transparent')
         ctk.CTkLabel(self, text=self.page_name, font=('Helvetica', 18, "bold")).grid_columnconfigure(5, weight=1)
@@ -196,7 +200,29 @@ class Camera(ctk.CTkFrame):
             self.file_number.set(str(int(self.file_number.get())+1))
         self.file_number = ctk.StringVar(self,"2550000")
         ctk.CTkEntry(self,textvariable=self.file_number).grid(row=3,column=2)
-        ctk.CTkButton(self, text="Photo",command=lambda:snap()).grid(row=8,column=2)     
+        ctk.CTkButton(self, text="Photo",command=lambda:snap()).grid(row=8,column=2)
+class Train(ctk.CTkFrame):
+    page_icon = "ai.png"
+    page_name = "train"
+    file_number:ctk.StringVar = None
+    def __init__(self, master: AirMouseUI):
+        if master.main_frame is not None:
+            master.main_frame.grid_forget()
+        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkFrame.configure(self,fg_color='transparent')
+        cam = ctk.CTkLabel(self, text=self.page_name, font=('Helvetica', 18, "bold"))
+        cam.grid_rowconfigure(10, weight=1)
+        cam.grid_columnconfigure(5, weight=1)
+        master.camera_frame.configure(size=(416,416))
+        ctk.CTkLabel(self,text="",image=master.camera_frame).grid(row=0, column=0,padx=150,columnspan=5,rowspan=1)
+        def snap(self:Train):
+            master.stream = cv2.resize(master.stream, (416,416)) 
+            master.stream = cv2.cvtColor(master.stream,cv2.COLOR_BGR2RGB)
+            cv2.imwrite("src/project/train/images/"+self.file_number.get()+".png",master.stream)
+            self.file_number.set(str(int(self.file_number.get())+1))
+        self.file_number = ctk.StringVar(self,"2550000")
+        ctk.CTkEntry(self,textvariable=self.file_number).grid(row=7,column=0)
+        ctk.CTkButton(self, text="Photo",command=lambda:snap(self)).grid(row=8,column=0)
 #===============================================================Main=================================================================
 if __name__ == "__main__":
     capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
